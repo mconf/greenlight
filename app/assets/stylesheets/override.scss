@@ -16,3 +16,57 @@
 */
 
 /* IN THIS FILE YOU CAN ADD ANY SCSS TAG AND IT WILL OVERRIDE THE DEFAULT GREENLIGHT STYLING */
+
+html, body {
+    background-color: darken($background-color, 10%);
+}
+
+.header {
+    background-color: $header-background-color;
+
+    .container #create-room, .username{
+        color: white !important;        
+    }
+}
+
+@each $color, $value in $theme-colors {
+    .header .btn-outline-#{$color} {
+      @include button-outline-variant($value);
+      border-width: 2px;
+      font-size: 1rem;
+      color: white;
+      border-color: white;
+
+      &:hover {
+          color: $value;
+          border-color: $value;
+          background-color: white;
+      }
+    }
+
+    .form-footer .btn-outline-#{$color} {
+        @include button-outline-variant($value);
+    }    
+}
+
+.container.text-center {
+    h4, h2 {
+        color: white;
+    }
+
+    .stamp.bg-primary {
+        background-color: white !important;
+        color: $primary;
+    }
+}
+
+.sessions{
+
+    .container {
+        color: white;
+    }
+}
+
+input.btn-pill {
+    border-radius: 0.2rem;
+}
