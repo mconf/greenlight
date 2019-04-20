@@ -20,6 +20,7 @@ Rails.configuration.i18n.default_locale =
   end
 
 # Configure fallbacks
+Rails.configuration.i18n.fallbacks = {}
 Rails.configuration.i18n.available_locales.each do |locale|
   Rails.configuration.i18n.fallbacks[locale] = [locale, :en]
 end
