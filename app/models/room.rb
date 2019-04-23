@@ -145,7 +145,7 @@ class Room < ApplicationRecord
   # Chooses the recording of arrom, based on its id and type
   def play_recording(record_id, type)
     recording = recordings.select { |r| r[:recordID] == record_id }.first
-    recording.playbacks.select { |p| p[:type] == type }.first.url if recording
+    recording[:playbacks].select { |p| p[:type] == type }.first[:url] if recording
   end
 
   # Passing token on the url
@@ -197,7 +197,7 @@ class Room < ApplicationRecord
   rescue BigBlueButton::BigBlueButtonException => e
     logger.error "Error when trying to connect to the BBB server: #{e}"
     logger.error "Possibly related to enabling BBB server authentication" if e.to_s.include?('getRecordingToken')
-    
+
     raise e
   end
 end
