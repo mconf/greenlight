@@ -13,18 +13,22 @@ WORKDIR $RAILS_ROOT
 # Set environment variables.
 ENV RAILS_ENV production
 
-# Adding project files.
-COPY . .
+# Copy Gemfile to run bundle install
+COPY ./Gemfile ./Gemfile
+COPY ./Gemfile.lock ./Gemfile.lock
 
 # Install gems.
 RUN bundle install --without development test --deployment --clean
 
+# Expose port 80.
+EXPOSE 80
+
+# Adding project files.
+COPY . .
+
 # Precompile assets.
 RUN bundle exec rake assets:clean
 RUN bundle exec rake assets:precompile
-
-# Expose port 80.
-EXPOSE 80
 
 # Start the application.
 CMD ["bin/start"]
