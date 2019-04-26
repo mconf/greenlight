@@ -87,7 +87,7 @@ module OmniAuthLDAPExt
 
     form
   end
-
+  
   # Customize LDAP form generation
   def generate_form
     f = OmniAuth::Form.new(title: I18n.t('ldap_login'), url: callback_path)

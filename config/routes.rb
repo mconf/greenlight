@@ -20,75 +20,73 @@ Rails.application.routes.draw do
   # Root route
   root to: 'errors#not_found', as: ''
 
-  scope Rails.configuration.landing_page_url do
-    get '/', to: 'main#index', as: :root
+  get '/', to: 'main#index', as: :root
 
-    # Health check route
-    get 'health_check', to: 'health_check/health_check#index'
+  # Health check route
+  get 'health_check', to: 'health_check/health_check#index'
 
-    # Error routes.
-    match '/404', to: 'errors#not_found', via: :all, as: :not_found
-    match '/422', to: 'errors#unprocessable', via: :all, as: :unprocessable
-    match '/500', to: 'errors#internal_error', via: :all, as: :internal_error
+  # Error routes.
+  match '/404', to: 'errors#not_found', via: :all, as: :not_found
+  match '/422', to: 'errors#unprocessable', via: :all, as: :unprocessable
+  match '/500', to: 'errors#internal_error', via: :all, as: :internal_error
 
-    # Signup routes.
-    get '/signup', to: 'users#new', as: :signup
-    post '/signup', to: 'users#create', as: :create_user
+  # Signup routes.
+  get '/signup', to: 'users#new', as: :signup
+  post '/signup', to: 'users#create', as: :create_user
 
-    # Redirect to terms page
-    match '/terms', to: 'users#terms', via: [:get, :post]
+  # Redirect to terms page
+  match '/terms', to: 'users#terms', via: [:get, :post]
 
-    # Password reset resources.
-    resources :password_resets, only: [:new, :create, :edit, :update]
+  # Password reset resources.
+  resources :password_resets, only: [:new, :create, :edit, :update]
 
-    # Account activation resources
-    scope '/account_activations' do
-      get '/', to: 'account_activations#show', as: :account_activation
-      get '/edit', to: 'account_activations#edit', as: :edit_account_activation
-      post '/resend', to: 'account_activations#resend', as: :resend_email
-    end
+  # Account activation resources
+  scope '/account_activations' do
+    get '/', to: 'account_activations#show', as: :account_activation
+    get '/edit', to: 'account_activations#edit', as: :edit_account_activation
+    post '/resend', to: 'account_activations#resend', as: :resend_email
+  end
 
-    # User resources.
-    scope '/u' do
-      # Handles login of greenlight provider accounts.
-      post '/login', to: 'sessions#create', as: :create_session
+  # User resources.
+  scope '/u' do
+    # Handles login of greenlight provider accounts.
+    post '/login', to: 'sessions#create', as: :create_session
 
-      # Log the user out of the session.
-      get '/logout', to: 'sessions#destroy'
+    # Log the user out of the session.
+    get '/logout', to: 'sessions#destroy'
 
-      # Account management.
-      get '/:user_uid/edit', to: 'users#edit', as: :edit_user
-      patch '/:user_uid/edit', to: 'users#update', as: :update_user
-      delete '/:user_uid', to: 'users#destroy', as: :delete_user
+    # Account management.
+    get '/:user_uid/edit', to: 'users#edit', as: :edit_user
+    patch '/:user_uid/edit', to: 'users#update', as: :update_user
+    delete '/:user_uid', to: 'users#destroy', as: :delete_user
 
-      # All user recordings
-      get '/:user_uid/recordings', to: 'users#recordings', as: :get_user_recordings
-    end
+    # All user recordings
+    get '/:user_uid/recordings', to: 'users#recordings', as: :get_user_recordings
+  end
 
-    # Handles Omniauth authentication.
-    match '/auth/:provider/callback', to: 'sessions#omniauth', via: [:get, :post], as: :omniauth_session
-    get '/auth/failure', to: 'sessions#omniauth_fail'
+  # Room resources.
+  resources :rooms, only: [:create, :show, :destroy], param: :room_uid, path: '/'
 
-    # Room resources.
-    resources :rooms, only: [:create, :show, :destroy], param: :room_uid, path: '/'
+  # Extended room routes.
+  scope '/:room_uid' do
+    post '/', to: 'rooms#join'
+    patch '/', to: 'rooms#update', as: :update_room
+    post '/update_settings', to: 'rooms#update_settings'
+    post '/start', to: 'rooms#start', as: :start_room
+    get '/logout', to: 'rooms#logout', as: :logout_room
+  end
 
-    # Extended room routes.
-    scope '/:room_uid' do
-      post '/', to: 'rooms#join'
-      patch '/', to: 'rooms#update', as: :update_room
-      post '/update_settings', to: 'rooms#update_settings'
-      post '/start', to: 'rooms#start', as: :start_room
-      get '/logout', to: 'rooms#logout', as: :logout_room
-    end
-
-    # Recording operations routes
-    scope '/:meetingID' do
-      # Manage recordings
-      scope '/:record_id' do
-        post '/', to: 'recordings#update_recording', as: :update_recording
-        delete '/', to: 'recordings#delete_recording', as: :delete_recording
-        get '/:type', to: 'recordings#play_recording', as: :play_recording
-      end
+  # Recording operations routes
+  scope '/:meetingID' do
+    # Manage recordings
+    scope '/:record_id' do
+      post '/', to: 'recordings#update_recording', as: :update_recording
+      delete '/', to: 'recordings#delete_recording', as: :delete_recording
+      get '/:type', to: 'recordings#play_recording', as: :play_recording
     end
   end
+
+  # Handles Omniauth authentication.
+  match '/auth/:provider/callback', to: 'sessions#omniauth', via: [:get, :post], as: :omniauth_session
+  get '/auth/failure', to: 'sessions#omniauth_fail'
 end
