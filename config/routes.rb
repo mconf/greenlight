@@ -17,10 +17,8 @@
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 Rails.application.routes.draw do
-  # Root route
-  root to: 'errors#not_found', as: ''
 
-  get '/', to: 'main#index', as: :root
+  root to: 'main#index', as: :root
 
   # Health check route
   get 'health_check', to: 'health_check/health_check#index'
