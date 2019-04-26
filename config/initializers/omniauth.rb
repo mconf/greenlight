@@ -90,16 +90,24 @@ module OmniAuthLDAPExt
   
   # Customize LDAP form generation
   def generate_form
+    @flashes = request.env.dig('action_dispatch.request.unsigned_session_cookie', 'flash', 'flashes')
+ 
     f = OmniAuth::Form.new(title: I18n.t('ldap_login'), url: callback_path)
+    f.info @flashes['alert'], :alert if @flashes
+    f.info @flashes['notice'], :notice if @flashes
     f.login_field 'username'
     f.password_field 'password'
     f.button "Login"
+    f.close_body
     f.to_response
   end
 end
 
 # Workaround to have access to OmniAuth::Form to customize the LDAP Form creation
 module OmniAuthFormExt
+
+  INFO_LEVEL = {alert: 'danger', notice: 'primary', warning: 'warning'}
+
   # Overrides the header to add the div.center tag
   def header(title, header_info)
     @html << <<-HTML
@@ -116,6 +124,18 @@ module OmniAuthFormExt
         <h1>#{title}</h1>
         <form method='post' #{"action='#{options[:url]}' " if options[:url]}noValidate='noValidate'>
     HTML
+
+    self
+  end
+
+  def info(flash, level)
+    if flash
+      @html << <<-HTML
+      <div class='alert alert-icon alert-#{INFO_LEVEL[level] || primary} text-center'>
+        <div class="flash alert d-inline p-0">#{flash}</div>
+      </div>
+      HTML
+    end
 
     self
   end
@@ -157,6 +177,19 @@ module OmniAuthFormExt
     @with_custom_button = true
     @html << "<input type='submit' name='commit' value='#{text}' \
               class='btn btn-outline-primary btn-block btn-pill' data-disable-with='Login'>"
+
+    self
+  end
+
+  # Close the form
+  def close_body
+    @html << <<-HTML
+      </form>
+      </div>
+      </body>
+    HTML
+
+    self
   end
 
   protected
