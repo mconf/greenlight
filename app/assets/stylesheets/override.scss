@@ -17,17 +17,6 @@
 
 /* IN THIS FILE YOU CAN ADD ANY SCSS TAG AND IT WILL OVERRIDE THE DEFAULT GREENLIGHT STYLING */
 
-html, body {
-    background-color: darken($background-color, 10%);
-}
-
-.header {
-    background-color: $header-background-color;
-
-    .container #create-room, .username{
-        color: white !important;        
-    }
-}
 
 @each $color, $value in $theme-colors {
     .header .btn-outline-#{$color} {
@@ -51,16 +40,17 @@ html, body {
 
 .container.text-center {
     h4, h2 {
-        color: white;
-    }
-
-    .stamp.bg-primary {
-        background-color: white !important;
         color: $primary;
     }
 }
 
-.sessions{
+.header {
+    :not(.dropdown-item):not(.dropdown-icon) {        
+        color: white;
+    }
+}
+
+.sessions {
 
     .container {
         color: white;
