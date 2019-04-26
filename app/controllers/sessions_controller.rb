@@ -47,7 +47,11 @@ class SessionsController < ApplicationController
 
   # POST /auth/failure
   def omniauth_fail
-    redirect_to root_path, alert: I18n.t(params[:message], default: I18n.t("omniauth_error"))
+    if Rails.application.config.omniauth_ldap
+      redirect_to "#{root_path}/auth/ldap", alert: I18n.t(params[:message], default: I18n.t("omniauth_error"))
+    else
+      redirect_to root_path, alert: I18n.t(params[:message], default: I18n.t("omniauth_error"))
+    end
   end
 
   private
