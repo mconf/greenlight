@@ -39,6 +39,7 @@ class SessionsController < ApplicationController
   # GET/POST /auth/:provider/callback
   def omniauth
     user = User.from_omniauth(request.env['omniauth.auth'])
+    flash.discard :alert
     login(user)
   rescue => e
     logger.error "Error authenticating via omniauth: #{e}"
@@ -47,7 +48,11 @@ class SessionsController < ApplicationController
 
   # POST /auth/failure
   def omniauth_fail
-    redirect_to root_path, alert: I18n.t(params[:message], default: I18n.t("omniauth_error"))
+    if Rails.application.config.omniauth_ldap
+      redirect_to "#{root_path}auth/ldap", alert: I18n.t(params[:message], default: I18n.t("omniauth_error"))
+    else
+      redirect_to root_path, alert: I18n.t(params[:message], default: I18n.t("omniauth_error"))
+    end
   end
 
   private

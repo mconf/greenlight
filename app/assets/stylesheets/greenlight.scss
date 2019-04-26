@@ -16,10 +16,11 @@
 */
 
 // File variables
-$error-bg: #EFE6E6 !default;
 $header-height: 65px !default;
 $footer-height: 65px !default;
-$background-color: white !default;
+$background: white !default;
+$header-background: white !default;
+$error-background: #EFE6E6 !default;
 
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300i,400,400i,500,500i,600,600i,700,700i&amp;subset=latin-ext);
 
@@ -27,7 +28,11 @@ html, body {
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: $background-color;
+  background-color: $background;
+}
+
+.header {
+  background-color: $header-background;
 }
 
 a {
@@ -64,11 +69,11 @@ a {
 }
 
 .background {
-  background-color: $body-bg;
+  background-color: $background;
 }
 
 .error-section {
-  background-color: $error-bg;
+  background-color: $error-background;
 }
 
 .font-weight-400 {

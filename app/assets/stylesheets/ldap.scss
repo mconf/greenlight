@@ -1,8 +1,7 @@
 @import "custom-variables";
-$ldap-bg-color: #d6d6d6 !default;
 
 body {
-    background-color: $ldap-bg-color;
+    background-color: $primary;
 }
 
 .center {
@@ -10,11 +9,11 @@ body {
     padding: 30px 50px;
     right: 50%;
     bottom: 50%;
+    width: 30%;
     transform: translate(50%,50%);
     position: absolute;
     text-align: center;
     color: rgb(73, 80, 87);
-    width: 50%;
     border: 1px solid rgba(0, 0, 0, 0.2);
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;

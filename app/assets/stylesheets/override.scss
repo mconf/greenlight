@@ -16,3 +16,47 @@
 */
 
 /* IN THIS FILE YOU CAN ADD ANY SCSS TAG AND IT WILL OVERRIDE THE DEFAULT GREENLIGHT STYLING */
+
+
+@each $color, $value in $theme-colors {
+    .header .btn-outline-#{$color} {
+      @include button-outline-variant($value);
+      border-width: 2px;
+      font-size: 1rem;
+      color: white;
+      border-color: white;
+
+      &:hover {
+          color: $value;
+          border-color: $value;
+          background-color: white;
+      }
+    }
+
+    .form-footer .btn-outline-#{$color} {
+        @include button-outline-variant($value);
+    }    
+}
+
+.container.text-center {
+    h4, h2 {
+        color: $primary;
+    }
+}
+
+.header {
+    :not(.dropdown-item):not(.dropdown-icon) {        
+        color: white;
+    }
+}
+
+.sessions {
+
+    .container {
+        color: white;
+    }
+}
+
+input.btn-pill {
+    border-radius: 0.2rem;
+}
