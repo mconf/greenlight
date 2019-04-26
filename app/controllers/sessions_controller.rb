@@ -39,6 +39,7 @@ class SessionsController < ApplicationController
   # GET/POST /auth/:provider/callback
   def omniauth
     user = User.from_omniauth(request.env['omniauth.auth'])
+    flash.discard :alert
     login(user)
   rescue => e
     logger.error "Error authenticating via omniauth: #{e}"
