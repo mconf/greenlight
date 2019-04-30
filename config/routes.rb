@@ -20,6 +20,9 @@ Rails.application.routes.draw do
 
   root to: 'main#index', as: :root
 
+  # Home page (responsible for the redirections)
+  get 'home', to: 'main#home', as: :home
+
   # Health check route
   get 'health_check', to: 'health_check/health_check#index'
 
