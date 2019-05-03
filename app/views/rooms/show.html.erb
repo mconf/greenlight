@@ -29,7 +29,7 @@
         </div>
         <h4 class="text-left mb-6"><%= @room.sessions %> <%= t("room.sessions") %> | <%= @recordings.length %> <%= t("room.recordings") %></h4>
         <label class="form-label"><%= t("room.invite_participants") %></label>
-        <div class="row">
+        <div class="row align-items-center">
           <div class="col-lg-5 col-md-12 mt-2 pr-0">
             <div class="input-icon invite-link-input">
               <span class="input-icon-addon">
@@ -39,16 +39,16 @@
             </div>
           </div>
           <div class="col-lg-7 col-md-12 pr-0">
-            <div class="row">
-              <div class="col-sm-6">
-                <a href="#" id="copy" class="btn btn-primary btn-block mt-2">
+            <div class="row mt-2 align-items-center">
+              <div class="col-md-6">
+                <a href="#" id="copy" class="btn btn-primary btn-block">
                   <i class="fas fa-copy"></i>
                   <%= t("copy") %>
                 </a>
               </div>
-              <div class="col-sm-6 pl-0">
+              <div class="col-md-6 pl-0">
                 <% if Rails.configuration.enable_google_calendar_button %>
-                  <a href="<%= google_calendar_path %>" target="__blank" id="schedule" class="btn btn-primary btn-block mt-2">
+                  <a href="<%= google_calendar_path %>" target="__blank" id="schedule" class="btn btn-primary btn-block">
                     <i class="fas fa-calendar-plus"></i>
                     <%= t("add_to_google_calendar") %>
                   </a>
