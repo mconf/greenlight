@@ -29,7 +29,7 @@
     </div>
   </td>
   <% if recording_thumbnails? %>
-    <td>
+    <th class="d-sm-none d-lg-table-cell">
       <% p = recording[:playbacks].find do |p| p.key?(:preview) end %>
       <% if p %>
         <% p[:preview][:images][:image].each do |img| %>
