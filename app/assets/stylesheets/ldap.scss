@@ -1,6 +1,7 @@
 @import "custom-variables";
 @import "tabler-variables";
 
+
 body {
     background-color: $primary;
 }
@@ -10,7 +11,7 @@ body {
     padding: 30px 50px;
     right: 50%;
     bottom: 50%;
-    width: 30%;
+    width: 40%;
     transform: translate(50%,50%);
     position: absolute;
     text-align: center;
@@ -23,10 +24,25 @@ body {
     -webkit-box-shadow: 2px 2px 2px rgba(0,0,0,0.1);
     box-shadow: 2px 2px 2px rgba(0,0,0,0.1);
 }
-
+    
 h1 {
     margin: 0;
     margin-bottom: 30px;
     font-size: 1.5rem;
     font-weight: 600;
+}
+
+@media screen and (max-width: 998px) {
+    
+    body {
+        font-size: 1.5rem;
+    }
+
+    .center {
+        width: 60%;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
 }
