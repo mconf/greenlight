@@ -26,7 +26,7 @@
                 <tr>
                   <th data-header="<%= t("recording.table.name") %>" data-order="none"><%= t("recording.table.name") %></th>
                   <% if recording_thumbnails? %>
-                    <th><%= t("recording.table.thumbnails") %></th>
+                    <th class="d-sm-none d-lg-table-cell"><%= t("recording.table.thumbnails") %></th>
                   <% end %>
                   <th class="text-left" data-header="<%= t("recording.table.length") %>" data-order="none">
                     <%= t("recording.table.length") %>
@@ -35,9 +35,9 @@
                     <%= t("recording.table.users") %>
                   </th>
                   <th class="text-left"><%= t("recording.table.visibility") %></th>
-                  <th><%= t("recording.table.formats") %></th>
+                  <th class="text-left"><%= t("recording.table.formats") %></th>
                   <% unless only_public %>
-                    <th class="text-center"><i class="icon-settings"></i></th>
+                    <th class="text-center"><%= t("recording.table.formats") %></th>
                   <% end %>
                 </tr>
               </thead>
