@@ -38,7 +38,7 @@
       <% end %>
     </td>
   <% end %>
-  <td id="recording-length" class="text-left" data-full-length="<%=recording[:playbacks].first[:length]%>">
+  <td id="recording-length" class="text-left" data-full-length="<%= recording_length(recording[:playbacks]) %>">
     <div class="small text-muted text-uppercase">
       <%= t("recording.table.length") %>
     </div>
