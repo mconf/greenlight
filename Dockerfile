@@ -6,18 +6,18 @@ RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs
 # Set an environment variable for the install location.
 ENV RAILS_ROOT /usr/src/app
 
+# Sets the footer of greenlight application with current build version
+ARG version_code
+ENV VERSION_CODE=$version_code
+
 # Make the directory and set as working.
 RUN mkdir -p $RAILS_ROOT
 WORKDIR $RAILS_ROOT
 
-# Set environment variables.
+# Set Rails environment.
 ENV RAILS_ENV production
 
-# Copy Gemfile to run bundle install
-COPY ./Gemfile ./Gemfile
-COPY ./Gemfile.lock ./Gemfile.lock
-
-# Install gems.
+COPY Gemfile* ./
 RUN bundle install --without development test --deployment --clean
 
 # Expose port 80.

@@ -64,7 +64,7 @@ module BbbApi
   def encode_bbb_url(base_url, secret, params, route = 'getUser')
     encoded_params = params.to_param
     string = route + encoded_params + secret
-    checksum = OpenSSL::Digest.digest('sha1', string).unpack('H*').first
+    checksum = OpenSSL::Digest.digest('sha1', string).unpack1('H*')
 
     URI.parse("#{base_url}#{route}?#{encoded_params}&checksum=#{checksum}")
   end
@@ -72,11 +72,5 @@ module BbbApi
   # Removes trailing forward slash from a URL.
   def remove_slash(s)
     s.nil? ? nil : s.chomp("/")
-  end
-
-  def launcher_allow_user_signup_whitelisted?(provider)
-    return false unless Rails.configuration.launcher_allow_user_signup
-    whitelist = Rails.configuration.launcher_allow_user_signup.split(',')
-    whitelist.include?(provider)
   end
 end

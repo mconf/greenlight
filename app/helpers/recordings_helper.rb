@@ -17,6 +17,8 @@
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 module RecordingsHelper
+  include Pagy::Frontend
+
   # Helper for converting BigBlueButton dates into the desired format.
   def recording_date(date)
     date.strftime("%B #{date.day.ordinalize}, %Y.")
@@ -31,7 +33,7 @@ module RecordingsHelper
     len = valid_playbacks.first[:length]
     if len > 60
       "#{(len / 60).to_i} hrs #{len % 60} mins"
-    elsif len == 0
+    elsif len.zero?
       "< 1 min"
     else
       "#{len} min"

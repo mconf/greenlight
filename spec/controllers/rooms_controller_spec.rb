@@ -82,6 +82,30 @@ describe RoomsController, type: :controller do
       expect(flash[:alert]).to be_present
       expect(response).to redirect_to(root_path)
     end
+
+    it "sets the join name to cookie[:greenlight_name] if it exists" do
+      name = Faker::Games::Pokemon.name
+      @request.cookies[:greenlight_name] = name
+
+      get :show, params: { room_uid: @owner.main_room }
+
+      expect(assigns(:name)).to eql(name)
+    end
+
+    it "sets the join name to blank if user isnt signed in" do
+      get :show, params: { room_uid: @owner.main_room }
+
+      expect(assigns(:name)).to eql("")
+    end
+
+    it "redirects to admin if user is a super_admin" do
+      @request.session[:user_id] = @owner.id
+      @owner.add_role :super_admin
+
+      get :show, params: { room_uid: @owner.main_room, search: :none }
+
+      expect(response).to redirect_to(admins_path)
+    end
   end
 
   describe "POST #create" do
@@ -91,7 +115,7 @@ describe RoomsController, type: :controller do
 
     it "should create room with name and correct settings" do
       @request.session[:user_id] = @owner.id
-      name = Faker::Pokemon.name
+      name = Faker::Games::Pokemon.name
 
       room_params = { name: name, "client": "html5", "mute_on_join": "1" }
       json_room_settings = "{\"muteOnStart\":true,\"joinViaHtml5\":true}"
@@ -105,13 +129,37 @@ describe RoomsController, type: :controller do
       expect(response).to redirect_to(r)
     end
 
-    it "it should redirect to root if not logged in" do
+    it "should redirect to root if not logged in" do
       expect do
-        name = Faker::Pokemon.name
+        name = Faker::Games::Pokemon.name
         post :create, params: { room: { name: name } }
       end.to change { Room.count }.by(0)
 
       expect(response).to redirect_to(root_path)
+    end
+
+    it "should redirect back to main room with error if it fails" do
+      @request.session[:user_id] = @owner.id
+
+      room_params = { name: "", "client": "html5", "mute_on_join": "1" }
+
+      post :create, params: { room: room_params }
+
+      expect(flash[:alert]).to be_present
+      expect(response).to redirect_to(@owner.main_room)
+    end
+
+    it "redirects to main room if room limit is reached" do
+      allow_any_instance_of(Setting).to receive(:get_value).and_return(1)
+
+      @request.session[:user_id] = @owner.id
+
+      room_params = { name: Faker::Games::Pokemon.name, "client": "html5", "mute_on_join": "1" }
+
+      post :create, params: { room: room_params }
+
+      expect(flash[:alert]).to be_present
+      expect(response).to redirect_to(@owner.main_room)
     end
   end
 
@@ -167,6 +215,15 @@ describe RoomsController, type: :controller do
       @owner.update_attribute(:email_verified, false)
 
       post :join, params: { room_uid: @room, join_name: @owner.name }
+
+      expect(flash[:alert]).to be_present
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "should not allow the user to join if the user isn't signed in and room authentication is required" do
+      allow_any_instance_of(Setting).to receive(:get_value).and_return("true")
+
+      post :join, params: { room_uid: @room }
 
       expect(flash[:alert]).to be_present
       expect(response).to redirect_to(root_path)
@@ -245,7 +302,7 @@ describe RoomsController, type: :controller do
 
     it "properly updates room name through the room settings modal and redirects to current page" do
       @request.session[:user_id] = @user.id
-      name = Faker::Pokemon.name
+      name = Faker::Games::Pokemon.name
 
       room_params = { room_uid: @secondary_room.uid, room: { "name": name } }
 
@@ -298,6 +355,21 @@ describe RoomsController, type: :controller do
                                setting: :rename_recording, record_name: :name }
 
       expect(response).to redirect_to(@secondary_room)
+    end
+  end
+
+  describe "GET #logout" do
+    before do
+      @user = create(:user)
+      @room = @user.main_room
+    end
+
+    it "redirects to the correct room" do
+      @request.session[:user_id] = @user.id
+
+      get :logout, params: { room_uid: @room }
+
+      expect(response).to redirect_to(@room)
     end
   end
 end
