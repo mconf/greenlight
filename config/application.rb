@@ -94,12 +94,6 @@ module Greenlight
     # Configure custom banner message.
     config.banner_message = ENV['BANNER_MESSAGE']
 
-    # Configure custom branding image.
-    config.branding_image = ENV['BRANDING_IMAGE'] || "https://raw.githubusercontent.com/bigbluebutton/greenlight/master/app/assets/images/logo_with_text.png"
-
-    # Show/Hide customization tab in user settings
-    config.allow_custom_branding = (ENV['ALLOW_CUSTOM_BRANDING'] == "true")
-
     # Enable/disable recording thumbnails.
     config.recording_thumbnails = (ENV['RECORDING_THUMBNAILS'] != "false")
 
@@ -130,22 +124,22 @@ module Greenlight
     # DEFAULTS
 
     # Default branding image if the user does not specify one
-    config.branding_image_default = "https://raw.githubusercontent.com/bigbluebutton/greenlight/master/app/assets/images/logo_with_text.png"
+    config.branding_image_default = ENV["BRANDING_IMAGE_DEFAULT"] || "https://raw.githubusercontent.com/bigbluebutton/greenlight/master/app/assets/images/logo_with_text.png"
 
     # Default primary color if the user does not specify one
-    config.primary_color_default = "#467fcf"
+    config.primary_color_default = ENV["PRIMARY_COLOR_DEFAULT"] || "#467fcf"
 
     # Default primary color lighten if the user does not specify one
-    config.primary_color_lighten_default = "#e8eff9"
+    config.primary_color_lighten_default = ENV["PRIMARY_COLOR_LIGHTEN_DEFAULT"] || "#e8eff9"
 
     # Default primary color darken if the user does not specify one
-    config.primary_color_darken_default = "#316cbe"
+    config.primary_color_darken_default = ENV["PRIMARY_COLOR_DARKEN_DEFAULT"] || "#316cbe"
 
     # Default registration method if the user does not specify one
     config.registration_method_default = config.registration_methods[:open]
 
     # Default limit on number of rooms users can create
-    config.number_of_rooms_default = 15
+    config.number_of_rooms_default = ENV["NUMBER_OF_ROOMS"] || 15
 
     # Default admin password
     config.admin_password_default = ENV['ADMIN_PASSWORD'] || 'administrator'
