@@ -312,6 +312,7 @@ en:
       verification_failed: reCAPTCHA verification failed, please try again.
   recording:
     all_recordings: All Recordings
+    clipboard: Copy recording link to the clipboard
     email: Email Recording
     no_recordings: This room has no %{inject}recordings.
     no_user_recordings: You currently have no recordings.

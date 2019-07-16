@@ -309,6 +309,7 @@ pt_BR:
       verification_failed: "Verificação do reCAPTCHA falhou, por favor, tente novamente."
   recording:
     all_recordings: Todas Gravações
+    clipboard: Copiar link da gravação para o clipboard
     email: Enviar link da gravação por e-mail
     no_recordings: "Esta sala não possui %{inject} gravações."
     no_user_recordings: Você não possui gravações.

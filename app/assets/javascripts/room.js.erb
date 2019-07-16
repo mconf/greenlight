@@ -53,6 +53,50 @@ $(document).on('turbolinks:load', function(){
         win.focus();
       });
     });
+
+    // Handle recording clipboard copy
+    function fallbackCopyTextToClipboard(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        const successful = document.execCommand('copy');
+        console.log('Fallback: Copying text command was ' + successful ? 'successful' : 'unsuccessful');
+      } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+      }
+
+      document.body.removeChild(textArea);
+    }
+
+    function copyTextToClipboard(text) {
+      // Check for browser cliboard API
+      if (!navigator.clipboard) {
+        fallbackCopyTextToClipboard(text);
+        return;
+      }
+
+      navigator
+        .clipboard
+        .writeText(text)
+        .then(() => {
+          console.log('Async: Copying to clipboard was successful!');
+        })
+        .catch(err => {
+          console.error('Async: Could not copy text: ', err);
+        })
+    }
+
+    // Handle recording cliboard copy.
+    $('.clipboard-link').each(function(){
+      $(this).click(function(){
+        const clipboard_text = $(this).attr("data-pres-link");
+        copyTextToClipboard(clipboard_text);
+      });
+    });
   }
 
   // Display and update all fields related to creating a room in the createRoomModal
