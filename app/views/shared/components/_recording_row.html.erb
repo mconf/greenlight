@@ -63,7 +63,7 @@
     </div>
   </td>
   <td>
-    <% sorted_formats = recording[:playbacks].sort_by! {|p| p[:type]} %>
+    <% sorted_formats = recording[:playbacks].sort_by! { |p| p[:type] } %>
     <% sorted_formats.each do |p| %>
       <%= link_to t("recording.format.#{p[:type]}"), play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]), class: "btn btn-sm btn-primary", target: "_blank" %>
     <% end %>
