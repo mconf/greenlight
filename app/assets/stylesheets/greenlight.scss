@@ -15,9 +15,118 @@
 * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 */
 
-// Place all the styles related to the Main controller here.
-// They will automatically be included in application.css.
-// You can use Sass (SCSS) here: http://sass-lang.com/
+// File variables
+$header-height: 65px !default;
+$footer-height: 65px !default;
+$background: white !default;
+$darken-background: darken($background, 5%) !default;
+$header-background: white !default;
+$error-background: #EFE6E6 !default;
+
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300i,400,400i,500,500i,600,600i,700,700i&amp;subset=latin-ext);
+
+* {
+  outline: none !important;
+}
+
+html, body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: $background;
+}
+
+.header {
+  background-color: $header-background;
+}
+
+a {
+  text-decoration: none !important;
+  cursor: pointer;
+}
+
+.dotted_underline {
+  border-bottom: 3px dashed #d3d3d3;
+  width: 100%;
+}
+
+.disable-click {
+  pointer-events: none;
+}
+
+.header {
+  height: $header-height;
+}
+
+.wrapper {
+  position: relative;
+  height: auto;
+  min-height: calc(100% - #{$header-height} - #{$footer-height});
+}
+
+.footer {
+  height: $footer-height;
+  width: 100%;
+}
+
+.table-responsive {
+  overflow: visible;
+}
+
+.background {
+  background-color: $darken-background;
+}
+
+.error-section {
+  background-color: $error-background;
+}
+
+.font-weight-400 {
+  font-weight: 400;
+}
+
+.subtitle {
+  font-size: 25px;
+}
+
+.force-bottom {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+}
+
+.invite-link-input {
+  width: 100%;
+}
+
+.no-border-top {
+  td {
+    border-top: none;
+  }
+}
+
+.force-text-normal {
+  color: $gray-700;
+}
+
+.terms {
+  height: 55vh;
+  overflow: scroll;
+}
+
+[contenteditable]:focus {
+  outline: 0px solid transparent;
+}
+
+.cookies-banner {
+  background-color: $primary;
+  color: white;
+  height: $footer-height;
+
+  #cookies-agree-button {
+    background-color: $green !important;
+  }
+}
 
 .responsive-header {
   font-size: 3.3vw;
@@ -45,6 +154,7 @@
     height: 16px;
     border-bottom: 1px solid #d3d3d3;
     text-align: center;
+    
     span {
       font-size: 120%;
       background-color: #ffffff;
@@ -70,6 +180,7 @@
   border-radius: 2px;
   border: 1px solid transparent;
   margin-bottom:20px;
+
   &:hover {
     cursor: pointer;
     color: #ffffff;
@@ -81,7 +192,6 @@
     display: inline-block;
     vertical-align: middle;
     padding:13px 15px 13px 15px;
-    float:left;
     background: #ffffff;
   }
 
@@ -123,7 +233,7 @@
   }
 }
 
-.customBtn-microsoft_office365 {
+.customBtn-office365 {
   @extend .customBtn;
   background: #f65314;
 
@@ -142,5 +252,52 @@
     background: #ffffff image-url("windows-logo.png") no-repeat left top;
     background-size: 18px 18px;
     padding:10px 10px 10px 10px;
+  }
+}
+
+.customBtn-ldap {
+  @extend .customBtn;
+  background: #d61515;
+
+  .customBtn-image {
+    background: #ffffff image-url("ldap-logo.png") no-repeat left top;
+    background-size: 18px 18px;
+    padding:10px 10px 10px 10px;
+  }
+}
+
+.signin-button {
+  font-size: 16px;
+}
+
+
+input:focus {
+  border-color: $primary !important;
+}
+
+.list-group-item-action.active {
+  color: $primary;
+}
+
+.header .header-nav {
+  color: $text-muted !important;
+
+  &:hover {
+    padding-bottom: 21px;
+    border-bottom: 1px solid $primary;
+  }
+
+  &.active {
+    color: $primary !important;
+    padding-bottom: 21px;
+    border-bottom: 1px solid $primary;
+  }
+}
+
+table {
+  thead {
+    th[data-order]:hover {
+      cursor: pointer;
+    }
   }
 }

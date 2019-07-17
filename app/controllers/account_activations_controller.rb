@@ -17,6 +17,8 @@
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 class AccountActivationsController < ApplicationController
+  include Emailer
+
   before_action :ensure_unauthenticated
   before_action :find_user
 
@@ -27,29 +29,33 @@ class AccountActivationsController < ApplicationController
 
   # GET /account_activations/edit
   def edit
-    if @user && !@user.email_verified? && @user.authenticated?(:activation, params[:token])
+    if @user && !@user.activated? && @user.authenticated?(:activation, params[:token])
       @user.activate
 
+      # Redirect user to root with account pending flash if account is still pending
+      return redirect_to root_path,
+        flash: { success: I18n.t("registration.approval.signup") } if @user.has_role?(:pending)
+
       flash[:success] = I18n.t("verify.activated") + " " + I18n.t("verify.signin")
+      redirect_to signin_path
     else
       flash[:alert] = I18n.t("verify.invalid")
+      redirect_to root_path
     end
-
-    redirect_to root_url
   end
 
   # GET /account_activations/resend
   def resend
-    if @user.email_verified
+    if @user.activated?
       flash[:alert] = I18n.t("verify.already_verified")
     else
       begin
-        @user.send_activation_email(verification_link)
+        send_activation_email(@user)
       rescue => e
         logger.error "Error in email delivery: #{e}"
         flash[:alert] = I18n.t(params[:message], default: I18n.t("delivery_error"))
       else
-        flash[:success] = I18n.t("email_sent")
+        flash[:success] = I18n.t("email_sent", email_type: t("verify.verification"))
       end
     end
 
@@ -58,19 +64,15 @@ class AccountActivationsController < ApplicationController
 
   private
 
-  def verification_link
-    request.base_url + edit_account_activation_path(token: @user.activation_token, email: @user.email)
-  end
-
   def ensure_unauthenticated
     redirect_to current_user.main_room if current_user
   end
 
   def email_params
-    params.require(:email).permit(:token)
+    params.require(:email).permit(:email, :token)
   end
 
   def find_user
-    @user = User.find_by!(email: params[:email], provider: "greenlight")
+    @user = User.find_by!(email: params[:email], provider: @user_domain)
   end
 end

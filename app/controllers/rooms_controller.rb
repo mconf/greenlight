@@ -18,17 +18,22 @@
 
 class RoomsController < ApplicationController
   include RecordingsHelper
+  include Pagy::Backend
 
   before_action :validate_accepted_terms, unless: -> { !Rails.configuration.terms }
   before_action :validate_verified_email, except: [:show, :join],
                 unless: -> { !Rails.configuration.enable_email_verification }
   before_action :find_room, except: :create
   before_action :verify_room_ownership, except: [:create, :show, :join, :logout]
-  before_action :verify_room_owner_verified, only: [:show, :join]
+  before_action :verify_room_owner_verified, only: [:show, :join],
+                unless: -> { !Rails.configuration.enable_email_verification }
+  before_action :verify_user_not_admin, only: [:show]
 
   # POST /
   def create
     redirect_to(root_path) && return unless current_user
+
+    return redirect_to current_user.main_room, flash: { alert: I18n.t("room.room_limit") } if room_limit_exceeded
 
     @room = Room.new(name: room_params[:name])
     @room.owner = current_user
@@ -50,11 +55,27 @@ class RoomsController < ApplicationController
   # GET /:room_uid
   def show
     if current_user && @room.owned_by?(current_user)
-      recs = @room.recordings
+      @search, @order_column, @order_direction, recs =
+        @room.recordings(params.permit(:search, :column, :direction), true)
 
-      @recordings = recs
+      @pagy, @recordings = pagy_array(recs)
+
       @is_running = @room.running?
     else
+      # Get users name
+      @name = if current_user
+        current_user.name
+      elsif cookies.encrypted[:greenlight_name]
+        cookies.encrypted[:greenlight_name]
+      else
+        ""
+      end
+
+      @search, @order_column, @order_direction, pub_recs =
+        @room.public_recordings(params.permit(:search, :column, :direction), true)
+
+      @pagy, @public_recordings = pagy_array(pub_recs)
+
       render :join
     end
   end
@@ -79,6 +100,9 @@ class RoomsController < ApplicationController
 
   # POST /:room_uid
   def join
+    return redirect_to root_path,
+      flash: { alert: I18n.t("administrator.site_settings.authentication.user-info") } if auth_required
+
     opts = default_meeting_options
     unless @room.owned_by?(current_user)
       # Assign join name if passed.
@@ -89,6 +113,9 @@ class RoomsController < ApplicationController
         return
       end
     end
+
+    # create or update cookie with join name
+    cookies.encrypted[:greenlight_name] = @join_name unless cookies.encrypted[:greenlight_name] == @join_name
 
     if @room.running? || @room.owned_by?(current_user)
       # Determine if the user needs to join as a moderator.
@@ -105,6 +132,13 @@ class RoomsController < ApplicationController
         redirect_to @room.join_path(join_name, opts)
       end
     else
+
+      search_params = params[@room.invite_path] || params
+      @search, @order_column, @order_direction, pub_recs =
+        @room.public_recordings(search_params.permit(:search, :column, :direction), true)
+
+      @pagy, @public_recordings = pagy_array(pub_recs)
+
       # They need to wait until the meeting begins.
       render :wait
     end
@@ -131,8 +165,8 @@ class RoomsController < ApplicationController
 
     begin
       redirect_to @room.join_path(current_user.name, opts, current_user.uid)
-    rescue BigBlueButton::BigBlueButtonException => exc
-      redirect_to room_path, alert: I18n.t(exc.key.to_s.underscore, default: I18n.t("bigbluebutton_exception"))
+    rescue BigBlueButton::BigBlueButtonException => e
+      redirect_to room_path, alert: I18n.t(e.key.to_s.underscore, default: I18n.t("bigbluebutton_exception"))
     end
 
     # Notify users that the room has started.
@@ -179,7 +213,7 @@ class RoomsController < ApplicationController
 
   def create_room_settings_string(mute_res, client_res)
     room_settings = {}
-    room_settings["muteOnStart"] = mute_res == "1" ? true : false
+    room_settings["muteOnStart"] = mute_res == "1"
 
     if client_res.eql? "html5"
       room_settings["joinViaHtml5"] = true
@@ -223,19 +257,38 @@ class RoomsController < ApplicationController
 
   def validate_verified_email
     if current_user
-      redirect_to account_activation_path(current_user) unless current_user.email_verified
+      redirect_to account_activation_path(current_user) unless current_user.activated?
     end
   end
 
   def verify_room_owner_verified
-    unless @room.owner.email_verified
+    unless @room.owner.activated?
       flash[:alert] = t("room.unavailable")
 
-      if current_user
+      if current_user && !@room.owned_by?(current_user)
         redirect_to current_user.main_room
       else
         redirect_to root_path
       end
     end
+  end
+
+  def verify_user_not_admin
+    redirect_to admins_path if current_user && current_user&.has_role?(:super_admin)
+  end
+
+  def auth_required
+    Setting.find_or_create_by!(provider: user_settings_provider).get_value("Room Authentication") == "true" &&
+      current_user.nil?
+  end
+
+  def room_limit_exceeded
+    limit = Setting.find_or_create_by!(provider: user_settings_provider).get_value("Room Limit").to_i
+
+    # Does not apply to admin
+    # 15+ option is used as unlimited
+    return false if current_user&.has_role?(:admin) || limit == 15
+
+    current_user.rooms.count >= limit
   end
 end

@@ -12,21 +12,21 @@ namespace :conf do
     # Initial check that variables are set
     print "\nChecking environment"
     ENV_VARIABLES.each do |var|
-      if ENV[var].blank?
-        failed("#{var} not set correctly")
-      end
+      failed("#{var} not set correctly") if ENV[var].blank?
     end
     passed
 
+    endpoint = fix_endpoint_format(ENV['BIGBLUEBUTTON_ENDPOINT'])
+
     # Tries to establish a connection to the BBB server from Greenlight
     print "Checking Connection"
-    test_request(ENV['BIGBLUEBUTTON_ENDPOINT'])
+    test_request(endpoint)
     passed
 
     # Tests the checksum on the getMeetings api call
     print "Checking Secret"
     checksum = Digest::SHA1.hexdigest("getMeetings#{ENV['BIGBLUEBUTTON_SECRET']}")
-    test_request("#{ENV['BIGBLUEBUTTON_ENDPOINT']}api/getMeetings?checksum=#{checksum}")
+    test_request("#{endpoint}getMeetings?checksum=#{checksum}")
     passed
 
     if ENV['ALLOW_MAIL_NOTIFICATIONS'] == 'true'
@@ -48,8 +48,8 @@ def test_smtp
     ENV['SMTP_AUTH']) do |s|
     s.sendmail('test', ENV['SMTP_USERNAME'], 'notifications@example.com')
   end
-rescue => exc
-  failed("Error connecting to SMTP - #{exc}")
+rescue => e
+  failed("Error connecting to SMTP - #{e}")
 end
 
 # Takes the full URL including the protocol
@@ -58,11 +58,18 @@ def test_request(url)
   res = Net::HTTP.get(uri)
 
   doc = Nokogiri::XML(res)
-  if doc.css("returncode").text != "SUCCESS"
-    failed("Could not get a valid response from BigBlueButton server - #{res}")
-  end
-rescue => exc
-  failed("Error connecting to BigBlueButton server - #{exc}")
+  failed("Could not get a valid response from BigBlueButton server - #{res}") if doc.css("returncode").text != "SUCCESS"
+rescue => e
+  failed("Error connecting to BigBlueButton server - #{e}")
+end
+
+def fix_endpoint_format(url)
+  # Fix endpoint format if required.
+  url += "/" unless url.ends_with?('/')
+  url += "api/" if url.ends_with?('bigbluebutton/')
+  url += "bigbluebutton/api/" unless url.ends_with?('bigbluebutton/api/')
+
+  url
 end
 
 def failed(msg)

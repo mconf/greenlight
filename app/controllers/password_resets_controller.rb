@@ -17,6 +17,8 @@
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 class PasswordResetsController < ApplicationController
+  include Emailer
+
   before_action :disable_password_reset, unless: -> { Rails.configuration.enable_email_verification }
   before_action :find_user,   only: [:edit, :update]
   before_action :valid_user, only: [:edit, :update]
@@ -29,10 +31,12 @@ class PasswordResetsController < ApplicationController
     @user = User.find_by(email: params[:password_reset][:email].downcase)
     if @user
       @user.create_reset_digest
-      @user.send_password_reset_email(reset_link)
-      redirect_to root_url, notice: I18n.t("email_sent")
+      send_password_reset_email(@user)
+      flash[:success] = I18n.t("email_sent", email_type: t("reset_password.subtitle"))
+      redirect_to root_path
     else
-      redirect_to new_password_reset_path, alert: I18n.t("no_user_email_exists")
+      flash[:alert] = I18n.t("no_user_email_exists")
+      redirect_to new_password_reset_path
     end
   rescue => e
     logger.error "Error in email delivery: #{e}"
@@ -73,23 +77,18 @@ class PasswordResetsController < ApplicationController
 
   # Checks expiration of reset token.
   def check_expiration
-    if current_user.password_reset_expired?
-      redirect_to new_password_reset_url, alert: I18n.t("expired_reset_token")
-    end
-  end
-
-  def reset_link
-    request.base_url + edit_password_reset_path(@user.reset_token, email: @user.email)
+    redirect_to new_password_reset_url, alert: I18n.t("expired_reset_token") if current_user.password_reset_expired?
   end
 
   # Confirms a valid user.
   def valid_user
-    unless current_user&.email_verified && current_user.authenticated?(:reset, params[:id])
+    unless current_user.authenticated?(:reset, params[:id])
+      current_user&.activate unless current_user&.activated?
       redirect_to root_url
     end
   end
 
   def disable_password_reset
-    redirect_to '/404'
+    redirect_to not_found_path
   end
 end

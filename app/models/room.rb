@@ -16,8 +16,11 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
+require 'bbb_api'
+
 class Room < ApplicationRecord
   include ::APIConcern
+  include ::BbbApi
 
   before_create :setup
 
@@ -27,7 +30,6 @@ class Room < ApplicationRecord
 
   belongs_to :owner, class_name: 'User', foreign_key: :user_id
 
-  RETURNCODE_SUCCESS = "SUCCESS"
   META_LISTED = "gl-listed"
 
   # Determines if a user owns a room.
@@ -55,7 +57,7 @@ class Room < ApplicationRecord
       attendeePW: attendee_pw,
       moderatorOnlyMessage: options[:moderator_message],
       muteOnStart: options[:mute_on_start] || false,
-      "meta_#{META_LISTED}": false,
+      "meta_#{META_LISTED}": Rails.configuration.default_recording_visibility == "unlisted",
     }
 
     # Send the create request.
@@ -65,9 +67,9 @@ class Room < ApplicationRecord
       unless meeting[:messageKey] == 'duplicateWarning'
         update_attributes(sessions: sessions + 1, last_session: DateTime.now)
       end
-    rescue BigBlueButton::BigBlueButtonException => exc
-      puts "BigBlueButton failed on create: #{exc.key}: #{exc.message}"
-      raise exc
+    rescue BigBlueButton::BigBlueButtonException => e
+      puts "BigBlueButton failed on create: #{e.key}: #{e.message}"
+      raise e
     end
   end
 
@@ -119,15 +121,16 @@ class Room < ApplicationRecord
   end
 
   # Fetches all recordings for a room.
-  def recordings
+  def recordings(search_params = {}, ret_search_params = false)
     res = bbb.get_recordings(meetingID: bbb_id)
 
-    format_recordings(res)
+    format_recordings(res, search_params, ret_search_params)
   end
 
   # Fetches a rooms public recordings.
-  def public_recordings
-    recordings.select { |r| r[:metadata][:"gl-listed"] == "true" }
+  def public_recordings(search_params = {}, ret_search_params = false)
+    search, order_col, order_dir, recs = recordings(search_params, ret_search_params)
+    [search, order_col, order_dir, recs.select { |r| r[:metadata][:"gl-listed"] == "true" }]
   end
 
   def update_recording(record_id, meta)
@@ -138,6 +141,24 @@ class Room < ApplicationRecord
   # Deletes a recording from a room.
   def delete_recording(record_id)
     bbb.delete_recordings(record_id)
+  end
+
+  # Chooses the recording of arrom, based on its id and type
+  def play_recording(record_id, type)
+    recording = recordings.select { |r| r[:recordID] == record_id }.first
+    recording[:playbacks].select { |p| p[:type] == type }.first[:url] if recording
+  end
+
+  # Passing token on the url
+  def token_url(user, ip, record_id, playback)
+    auth_token = get_token(user, ip, record_id)
+    uri = playback
+    if auth_token.present?
+      uri += URI.parse(uri).query.blank? ? "?" : "&"
+      uri += "token=#{auth_token}"
+    end
+
+    uri
   end
 
   private
@@ -165,5 +186,19 @@ class Room < ApplicationRecord
   # Generates a random room uid that uses the users name.
   def random_room_uid
     [owner.name_chunk, uid_chunk, uid_chunk].join('-').downcase
+  end
+
+  # Get the token from the server
+  def get_token(user, ip, record_id)
+    if Rails.configuration.enable_bbb_server_authentication
+      auth_name = user.present? ? user.email : "anonymous"
+      api_token = bbb.send_api_request(:getRecordingToken, authUser: auth_name, authAddr: ip, meetingID: record_id)
+      api_token[:token]
+    end
+  rescue BigBlueButton::BigBlueButtonException => e
+    logger.error "Error when trying to connect to the BBB server: #{e}"
+    logger.error "Possibly related to enabling BBB server authentication" if e.to_s.include?('getRecordingToken')
+
+    raise e
   end
 end

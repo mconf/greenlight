@@ -19,10 +19,18 @@
 require 'bigbluebutton_api'
 
 class ApplicationController < ActionController::Base
+  include ApplicationHelper
   include SessionsHelper
+  include ThemingHelper
 
   before_action :migration_error?
   before_action :set_locale
+  before_action :check_admin_password
+  before_action :set_user_domain
+  before_action :check_user_role
+
+  # Manually handle BigBlueButton errors
+  rescue_from BigBlueButton::BigBlueButtonException, with: :handle_bigbluebutton_error
 
   # Force SSL for loadbalancer configurations.
   before_action :redirect_to_https
@@ -43,11 +51,15 @@ class ApplicationController < ActionController::Base
   end
 
   def update_locale(user)
-    I18n.locale = if user && user.language != 'default'
+    locale = if user && user.language != 'default'
       user.language
+    elsif !I18n.default_locale.nil?
+      I18n.default_locale.to_s
     else
       http_accept_language.language_region_compatible_from(I18n.available_locales)
     end
+
+    I18n.locale = locale.tr('-', '_') unless locale.nil?
   end
 
   def meeting_name_limit
@@ -68,15 +80,10 @@ class ApplicationController < ActionController::Base
 
   # Determines if the BigBlueButton endpoint is configured (or set to default).
   def bigbluebutton_endpoint_default?
-    return false if loadbalanced_configuration?
+    return false if Rails.configuration.loadbalanced_configuration
     Rails.configuration.bigbluebutton_endpoint_default == Rails.configuration.bigbluebutton_endpoint
   end
   helper_method :bigbluebutton_endpoint_default?
-
-  def loadbalanced_configuration?
-    Rails.configuration.loadbalanced_configuration
-  end
-  helper_method :loadbalanced_configuration?
 
   def recording_thumbnails?
     Rails.configuration.recording_thumbnails
@@ -84,7 +91,7 @@ class ApplicationController < ActionController::Base
   helper_method :recording_thumbnails?
 
   def allow_greenlight_users?
-    Rails.configuration.greenlight_accounts
+    allow_greenlight_accounts?
   end
   helper_method :allow_greenlight_users?
 
@@ -105,7 +112,65 @@ class ApplicationController < ActionController::Base
     }
   end
 
+  # Manually deal with 401 errors
+  rescue_from CanCan::AccessDenied do |_exception|
+    render "errors/not_found"
+  end
+
+  # Checks to make sure that the admin has changed his password from the default
+  def check_admin_password
+    if current_user&.has_role?(:admin) && current_user&.greenlight_account? &&
+       current_user&.authenticate(Rails.configuration.admin_password_default)
+
+      flash.now[:alert] = I18n.t("default_admin",
+        edit_link: edit_user_path(user_uid: current_user.uid) + "?setting=password").html_safe
+    end
+  end
+
   def redirect_to_https
-    redirect_to protocol: "https://" if loadbalanced_configuration? && request.headers["X-Forwarded-Proto"] == "http"
+    if Rails.configuration.loadbalanced_configuration && request.headers["X-Forwarded-Proto"] == "http"
+      redirect_to protocol: "https://"
+    end
+  end
+
+  def set_user_domain
+    if Rails.env.test? || !Rails.configuration.loadbalanced_configuration
+      @user_domain = "greenlight"
+    else
+      @user_domain = parse_user_domain(request.host)
+
+      # Checks to see if the user exists
+      begin
+        retrieve_provider_info(@user_domain, 'api2', 'getUserGreenlightCredentials')
+      rescue => e
+        if e.message.eql? "No user with that id exists"
+          render "errors/not_found", locals: { message: I18n.t("errors.not_found.user_not_found.message"),
+            help: I18n.t("errors.not_found.user_not_found.help") }
+        elsif e.message.eql? "Provider not included."
+          render "errors/not_found", locals: { message: I18n.t("errors.not_found.user_missing.message"),
+            help: I18n.t("errors.not_found.user_missing.help") }
+        else
+          render "errors/internal_error"
+        end
+      end
+    end
+  end
+  helper_method :set_user_domain
+
+  # Checks if the user is banned and logs him out if he is
+  def check_user_role
+    if current_user&.has_role? :denied
+      session.delete(:user_id)
+      redirect_to root_path, flash: { alert: I18n.t("registration.banned.fail") }
+    elsif current_user&.has_role? :pending
+      session.delete(:user_id)
+      redirect_to root_path, flash: { alert: I18n.t("registration.approval.fail") }
+    end
+  end
+  helper_method :check_user_role
+
+  # Manually Handle BigBlueButton errors
+  def handle_bigbluebutton_error
+    render "errors/bigbluebutton_error"
   end
 end

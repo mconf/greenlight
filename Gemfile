@@ -13,9 +13,6 @@ gem 'rails', '~> 5.0.7'
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 
-# Use SQLite as the primary database.
-gem 'sqlite3', '~> 1.3'
-
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 
@@ -29,7 +26,7 @@ gem 'coffee-rails', '~> 4.2'
 gem 'mini_racer', platforms: :ruby
 
 # Use jquery as the JavaScript library
-gem 'jquery-rails'
+gem 'jquery-rails', '~> 4.3.3'
 
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
 gem 'turbolinks', '~> 5'
@@ -47,9 +44,10 @@ gem 'bcrypt', '~> 3.1.7'
 gem 'omniauth'
 gem 'omniauth-twitter'
 gem 'omniauth-google-oauth2'
-gem 'omniauth-microsoft-office365', '~> 0.0.7'
-gem 'omniauth-ldap'
-gem 'omniauth-bn-launcher', '~> 0.1.0'
+gem 'omniauth-bn-office365', git: 'https://github.com/blindsidenetworks/omniauth-bn-office365.git', tag: '0.1.0'
+gem 'omniauth-bn-launcher', git: 'https://github.com/blindsidenetworks/omniauth-bn-launcher.git', tag: '0.1.1'
+gem 'bn-ldap-authentication', git: 'https://github.com/blindsidenetworks/bn-ldap-authentication.git'
+gem 'net-ldap'
 
 # BigBlueButton API wrapper.
 gem 'bigbluebutton-api-ruby'
@@ -57,6 +55,7 @@ gem 'bigbluebutton-api-ruby'
 # Front-end.
 gem 'bootstrap', '~> 4.3.1'
 gem 'tabler-rubygem'
+gem 'pagy'
 
 # For detecting the users preferred language.
 gem 'http_accept_language'
@@ -70,17 +69,26 @@ gem 'redcarpet'
 # For health check endpoint
 gem "health_check"
 
+# For providing user roles
+gem "rolify"
+# For limiting access based on user roles
+gem 'cancancan', '~> 2.0'
+
 group :production do
   # Use a postgres database in production.
   gem 'pg', '~> 0.18'
 end
 
+# Ruby linting.
+gem 'rubocop'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platform: :mri
-
   # Environment configuration.
   gem 'dotenv-rails'
+  # Use a sqlite database in test and development.
+  gem 'sqlite3', '~> 1.3.6'
 end
 
 group :test do
@@ -92,20 +100,18 @@ group :test do
   gem 'faker'
   gem "factory_bot_rails"
   gem 'webmock'
-
-  # Ruby linting.
-  gem 'rubocop'
 end
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> anywhere in the code.
   gem 'web-console', '>= 3.3.0'
   gem 'listen', '~> 3.0.5'
-
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
 end
+
+gem 'remote_syslog_logger'
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
@@ -113,3 +119,8 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem 'coveralls', require: false
 
 gem 'random_password'
+
+# Adds helpers for the Google reCAPTCHA API
+gem "recaptcha"
+
+gem 'i18n-language-mapping', '~> 0.1.0'

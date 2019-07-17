@@ -83,7 +83,7 @@ describe Room, type: :model do
         @room.start_session
       end.to change { @room.sessions }.by(1)
 
-      expect(@room.last_session.utc.to_i).to eq(Time.now.to_i)
+      expect(@room.last_session).not_to be nil
     end
   end
 
@@ -93,13 +93,8 @@ describe Room, type: :model do
         attendeePW: "testpass"
       )
 
-      if Rails.configuration.loadbalanced_configuration
-        endpoint = Rails.configuration.loadbalancer_endpoint
-        secret = Rails.configuration.loadbalancer_secret
-      else
-        endpoint = Rails.configuration.bigbluebutton_endpoint
-        secret = Rails.configuration.bigbluebutton_secret
-      end
+      endpoint = Rails.configuration.bigbluebutton_endpoint
+      secret = Rails.configuration.bigbluebutton_secret
       fullname = "fullName=Example"
       meeting_id = "&meetingID=#{@room.bbb_id}"
       password = "&password=testpass"
@@ -107,7 +102,7 @@ describe Room, type: :model do
       query = fullname + meeting_id + password
       checksum_string = "join#{query + secret}"
 
-      checksum = OpenSSL::Digest.digest('sha1', checksum_string).unpack("H*").first
+      checksum = OpenSSL::Digest.digest('sha1', checksum_string).unpack1("H*")
       expect(@room.join_path("Example")).to eql("#{endpoint}join?#{query}&checksum=#{checksum}")
     end
   end
@@ -144,16 +139,412 @@ describe Room, type: :model do
           {
             name: "Example",
             playback: {
-              format: "presentation",
-            },
-          },
-        ],
+              format:
+              {
+                type: "presentation"
+              }
+            }
+          }
+        ]
       )
 
       expect(@room.recordings).to contain_exactly(
         name: "Example",
-        playbacks: %w(presentation),
+        playbacks:
+        [
+          {
+            type: "presentation"
+          }
+        ]
       )
+    end
+
+    context '#filtering' do
+      before do
+        allow_any_instance_of(BigBlueButton::BigBlueButtonApi).to receive(:get_recordings).and_return(
+          recordings: [
+            {
+              name: "Example",
+              participants: "3",
+              playback: {
+                format:
+                {
+                  type: "presentation"
+                }
+              },
+              metadata: {
+                "gl-listed": "true",
+              }
+            },
+            {
+              name: "aExamaaa",
+              participants: "5",
+              playback: {
+                format:
+                {
+                  type: "other"
+                }
+              },
+              metadata: {
+                "gl-listed": "false",
+              }
+            },
+            {
+              name: "test",
+              participants: "1",
+              playback: {
+                format:
+                {
+                  type: "presentation"
+                }
+              },
+              metadata: {
+                "gl-listed": "true",
+              }
+            },
+            {
+              name: "Exam",
+              participants: "1",
+              playback: {
+                format:
+                {
+                  type: "other"
+                }
+              },
+              metadata: {
+                "gl-listed": "false",
+                name: "z",
+              }
+            }
+          ]
+        )
+      end
+
+      it "should filter recordings on name" do
+        expect(@room.recordings(search: "Exam")).to contain_exactly(
+          {
+            name: "aExamaaa",
+            participants: "5",
+            playbacks:
+              [
+                {
+                  type: "other"
+                }
+              ],
+            metadata: {
+              "gl-listed": "false",
+            }
+          },
+            name: "Example",
+            participants: "3",
+            playbacks:
+              [
+                {
+                  type: "presentation"
+                }
+              ],
+            metadata: {
+              "gl-listed": "true",
+            }
+        )
+      end
+
+      it "should filter recordings on participants" do
+        expect(@room.recordings(search: "5")).to contain_exactly(
+          name: "aExamaaa",
+          participants: "5",
+          playbacks:
+            [
+              {
+                type: "other"
+              }
+            ],
+          metadata: {
+            "gl-listed": "false",
+          }
+        )
+      end
+
+      it "should filter recordings on format" do
+        expect(@room.recordings(search: "presentation")).to contain_exactly(
+          {
+            name: "test",
+            participants: "1",
+            playbacks:
+                [
+                  {
+                    type: "presentation"
+                  }
+                ],
+            metadata: {
+              "gl-listed": "true",
+            }
+          },
+            name: "Example",
+            participants: "3",
+            playbacks:
+                [
+                  {
+                    type: "presentation"
+                  }
+                ],
+            metadata: {
+              "gl-listed": "true",
+            }
+        )
+      end
+
+      it "should filter recordings on visibility" do
+        expect(@room.recordings(search: "public")).to contain_exactly(
+          {
+            name: "test",
+            participants: "1",
+            playbacks:
+                [
+                  {
+                    type: "presentation"
+                  }
+                ],
+            metadata: {
+              "gl-listed": "true",
+            },
+          },
+            name: "Example",
+            participants: "3",
+            playbacks:
+                [
+                  {
+                    type: "presentation"
+                  }
+                ],
+            metadata: {
+              "gl-listed": "true",
+            }
+        )
+      end
+
+      it "should filter recordings on metadata name by default" do
+        expect(@room.recordings(search: "z")).to contain_exactly(
+          name: "Exam",
+          participants: "1",
+          playbacks:
+              [
+                {
+                  type: "other"
+                }
+              ],
+          metadata: {
+            "gl-listed": "false",
+            name: "z",
+          }
+        )
+      end
+    end
+
+    context '#sorting' do
+      before do
+        allow_any_instance_of(BigBlueButton::BigBlueButtonApi).to receive(:get_recordings).and_return(
+          recordings: [
+            {
+              name: "Example",
+              participants: "3",
+              playback: {
+                format: {
+                  type: "presentation",
+                  length: "4"
+                }
+              },
+              metadata: {
+                "gl-listed": "true",
+              }
+            },
+            {
+              name: "aExamaaa",
+              participants: "1",
+              playback: {
+                format: {
+                  type: "other",
+                  length: "3"
+                }
+              },
+              metadata: {
+                name: "Z",
+                "gl-listed": "false"
+              }
+            }
+          ]
+        )
+      end
+
+      it "should sort recordings on name" do
+        expect(@room.recordings(column: "name", direction: "asc")).to eq(
+          [
+            {
+              name: "Example",
+              participants: "3",
+              playbacks: [
+                {
+                  type: "presentation",
+                  length: "4"
+                }
+              ],
+              metadata: {
+                "gl-listed": "true",
+              }
+            },
+            {
+              name: "aExamaaa",
+              participants: "1",
+              playbacks: [
+                {
+                  type: "other",
+                  length: "3"
+                }
+              ],
+              metadata: {
+                name: "Z",
+                "gl-listed": "false"
+              }
+            }
+          ]
+        )
+      end
+
+      it "should sort recordings on participants" do
+        expect(@room.recordings(column: "users", direction: "desc")).to eq(
+          [
+            {
+              name: "Example",
+              participants: "3",
+              playbacks: [
+                {
+                  type: "presentation",
+                  length: "4"
+                }
+              ],
+              metadata: {
+                "gl-listed": "true",
+              }
+            },
+            {
+              name: "aExamaaa",
+              participants: "1",
+              playbacks: [
+                {
+                  type: "other",
+                  length: "3"
+                }
+              ],
+              metadata: {
+                name: "Z",
+                "gl-listed": "false"
+              }
+            }
+          ]
+        )
+      end
+
+      it "should sort recordings on visibility" do
+        expect(@room.recordings(column: "visibility", direction: "desc")).to eq(
+          [
+            {
+              name: "Example",
+              participants: "3",
+              playbacks: [
+                {
+                  type: "presentation",
+                  length: "4"
+                }
+              ],
+              metadata: {
+                "gl-listed": "true",
+              }
+            },
+            {
+              name: "aExamaaa",
+              participants: "1",
+              playbacks: [
+                {
+                  type: "other",
+                  length: "3"
+                }
+              ],
+              metadata: {
+                name: "Z",
+                "gl-listed": "false"
+              }
+            }
+          ]
+        )
+      end
+
+      it "should sort recordings on length" do
+        expect(@room.recordings(column: "length", direction: "asc")).to eq(
+          [
+            {
+              name: "aExamaaa",
+              participants: "1",
+              playbacks: [
+                {
+                  type: "other",
+                  length: "3"
+                }
+              ],
+              metadata: {
+                name: "Z",
+                "gl-listed": "false"
+              }
+            },
+            {
+              name: "Example",
+              participants: "3",
+              playbacks: [
+                {
+                  type: "presentation",
+                  length: "4"
+                }
+              ],
+              metadata: {
+                "gl-listed": "true",
+              }
+            }
+          ]
+        )
+      end
+
+      it "should sort recordings on format" do
+        expect(@room.recordings(column: "formats", direction: "desc")).to eq(
+          [
+            {
+              name: "Example",
+              participants: "3",
+              playbacks: [
+                {
+                  type: "presentation",
+                  length: "4"
+                }
+              ],
+              metadata: {
+                "gl-listed": "true",
+              }
+            },
+            {
+              name: "aExamaaa",
+              participants: "1",
+              playbacks: [
+                {
+                  type: "other",
+                  length: "3"
+                }
+              ],
+              metadata: {
+                name: "Z",
+                "gl-listed": "false"
+              }
+            }
+          ]
+        )
+      end
     end
 
     it "deletes the recording" do

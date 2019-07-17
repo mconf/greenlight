@@ -17,6 +17,8 @@
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 module RecordingsHelper
+  include Pagy::Frontend
+
   # Helper for converting BigBlueButton dates into the desired format.
   def recording_date(date)
     date.strftime("%B #{date.day.ordinalize}, %Y.")
@@ -30,8 +32,8 @@ module RecordingsHelper
 
     len = valid_playbacks.first[:length]
     if len > 60
-      "#{(len / 60).round} hrs"
-    elsif len == 0
+      "#{(len / 60).to_i} hrs #{len % 60} mins"
+    elsif len.zero?
       "< 1 min"
     else
       "#{len} min"
@@ -41,5 +43,9 @@ module RecordingsHelper
   # Prevents single images from erroring when not passed as an array.
   def safe_recording_images(images)
     Array.wrap(images)
+  end
+
+  def room_uid_from_bbb(bbb_id)
+    Room.find_by(bbb_id: bbb_id)[:uid]
   end
 end

@@ -25,7 +25,7 @@ Rails.application.configure do
   # config.assets.css_compressor = :sass
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
-  config.assets.compile = false
+  config.assets.compile = true
 
   # `config.assets.precompile` and `config.assets.version` have moved to config/initializers/assets.rb
 
@@ -84,10 +84,6 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
-  # the I18n.default_locale when a translation cannot be found).
-  config.i18n.fallbacks = true
-
   # Send deprecation notices to registered listeners.
   config.active_support.deprecation = :notify
 
@@ -99,9 +95,14 @@ Rails.application.configure do
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new 'app-name')
 
   if ENV["RAILS_LOG_TO_STDOUT"] == "true"
-    logger           = ActiveSupport::Logger.new(STDOUT)
+    logger = ActiveSupport::Logger.new(STDOUT)
     logger.formatter = config.log_formatter
     config.logger = ActiveSupport::TaggedLogging.new(logger)
+  elsif ENV["RAILS_LOG_REMOTE_NAME"] && ENV["RAILS_LOG_REMOTE_PORT"]
+    require 'remote_syslog_logger'
+    logger_program = ENV["RAILS_LOG_REMOTE_TAG"] || "greenlight-#{ENV['RAILS_ENV']}"
+    config.logger = RemoteSyslogLogger.new(ENV["RAILS_LOG_REMOTE_NAME"],
+      ENV["RAILS_LOG_REMOTE_PORT"], program: logger_program)
   end
 
   # Do not dump schema after migrations.
@@ -111,4 +112,7 @@ Rails.application.configure do
   if ENV['RELATIVE_URL_ROOT'] != "/"
     config.relative_url_root = ENV['RELATIVE_URL_ROOT'] || "/b"
   end
+
+  # Default visibility for recordings
+  config.default_recording_visibility = ENV['DEFAULT_RECORDING_VISIBILITY'] || "unlisted"
 end

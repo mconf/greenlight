@@ -16,13 +16,18 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
-class User < ApplicationRecord
-  include ::APIConcern
+require 'bbb_api'
 
-  attr_accessor :reset_token, :activation_token
-  after_create :create_home_room_if_verified
+class User < ApplicationRecord
+  rolify
+  include ::APIConcern
+  include ::BbbApi
+
+  attr_accessor :reset_token
+  after_create :assign_default_role
+  after_create :initialize_main_room
+
   before_save { email.try(:downcase!) }
-  before_create :create_activation_digest
 
   before_destroy :destroy_rooms
 
@@ -31,7 +36,7 @@ class User < ApplicationRecord
 
   validates :name, length: { maximum: 256 }, presence: true
   validates :provider, presence: true
-  validates :image, format: { with: /\.(png|jpg)\Z/i }, allow_blank: true
+  validate :check_if_email_can_be_blank
   validates :email, length: { maximum: 256 }, allow_blank: true,
                     uniqueness: { case_sensitive: false, scope: :provider },
                     format: { with: /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i }
@@ -65,7 +70,7 @@ class User < ApplicationRecord
     # Provider attributes.
     def auth_name(auth)
       case auth['provider']
-      when :microsoft_office365
+      when :office365
         auth['info']['display_name']
       else
         auth['info']['name']
@@ -92,12 +97,31 @@ class User < ApplicationRecord
       when :twitter
         auth['info']['image'].gsub("http", "https").gsub("_normal", "")
       else
-        auth['info']['image'] unless auth['provider'] == :microsoft_office365
+        auth['info']['image']
       end
     end
   end
 
-  def all_recordings
+  def self.admins_search(string)
+    active_database = Rails.configuration.database_configuration[Rails.env]["adapter"]
+    # Postgres requires created_at to be cast to a string
+    created_at_query = if active_database == "postgresql"
+      "created_at::text"
+    else
+      "created_at"
+    end
+
+    search_query = "users.name LIKE :search OR email LIKE :search OR username LIKE :search" \
+                   " OR users.#{created_at_query} LIKE :search OR provider LIKE :search"
+    search_param = "%#{string}%"
+    where(search_query, search: search_param)
+  end
+
+  def self.admins_order(column, direction)
+    order("#{column} #{direction}")
+  end
+
+  def all_recordings(search_params = {}, ret_search_params = false)
     pag_num = Rails.configuration.pagination_number
 
     pag_loops = rooms.length / pag_num - 1
@@ -118,19 +142,19 @@ class User < ApplicationRecord
     full_res = bbb.get_recordings(meetingID: last_pag_room.pluck(:bbb_id))
     res[:recordings].push(*full_res[:recordings])
 
-    format_recordings(res)
+    format_recordings(res, search_params, ret_search_params)
   end
 
   # Activates an account and initialize a users main room
   def activate
     update_attribute(:email_verified, true)
     update_attribute(:activated_at, Time.zone.now)
-
-    initialize_main_room
+    save
   end
 
-  def send_activation_email(url)
-    UserMailer.verify_email(self, url).deliver
+  def activated?
+    return true unless Rails.configuration.enable_email_verification
+    email_verified
   end
 
   # Sets the password reset attributes.
@@ -138,11 +162,6 @@ class User < ApplicationRecord
     self.reset_token = User.new_token
     update_attribute(:reset_digest,  User.digest(reset_token))
     update_attribute(:reset_sent_at, Time.zone.now)
-  end
-
-  # Sends password reset email.
-  def send_password_reset_email(url)
-    UserMailer.password_reset(self, url).deliver_now
   end
 
   # Returns true if the given token matches the digest.
@@ -180,7 +199,29 @@ class User < ApplicationRecord
   end
 
   def greenlight_account?
-    provider == "greenlight"
+    return true unless provider # For testing cases when provider is set to null
+    return true if provider == "greenlight"
+    return false unless Rails.configuration.loadbalanced_configuration
+    # Proceed with fetching the provider info
+    provider_info = retrieve_provider_info(provider, 'api2', 'getUserGreenlightCredentials')
+    provider_info['provider'] == 'greenlight'
+  end
+
+  def activation_token
+    # Create the token.
+    create_reset_activation_digest(User.new_token)
+  end
+
+  def admin_of?(user)
+    if Rails.configuration.loadbalanced_configuration
+      if has_role? :super_admin
+        id != user.id
+      else
+        (has_role? :admin) && (id != user.id) && (provider == user.provider) && (!user.has_role? :super_admin)
+      end
+    else
+      ((has_role? :admin) || (has_role? :super_admin)) && (id != user.id)
+    end
   end
 
   def self.digest(string)
@@ -195,10 +236,11 @@ class User < ApplicationRecord
 
   private
 
-  def create_activation_digest
-    # Create the token and digest.
-    self.activation_token  = User.new_token
-    self.activation_digest = User.digest(activation_token)
+  def create_reset_activation_digest(token)
+    # Create the digest and persist it.
+    self.activation_digest = User.digest(token)
+    save
+    token
   end
 
   # Destory a users rooms when they are removed.
@@ -206,17 +248,25 @@ class User < ApplicationRecord
     rooms.destroy_all
   end
 
-  # Assigns the user a BigBlueButton id and a home room if verified
-  def create_home_room_if_verified
-    self.uid = "gl-#{(0...12).map { (65 + rand(26)).chr }.join.downcase}"
-
-    initialize_main_room if email_verified
+  # Initializes a room for the user and assign a BigBlueButton user id.
+  def initialize_main_room
+    self.uid = "gl-#{(0...12).map { rand(65..90).chr }.join.downcase}"
+    self.main_room = Room.create!(owner: self, name: I18n.t("home_room"))
     save
   end
 
-  # Initializes a room for the user and assign a BigBlueButton user id.
-  def initialize_main_room
-    self.main_room = Room.create!(owner: self, name: I18n.t("home_room"))
-    save
+  # Initialize the user to use the default user role
+  def assign_default_role
+    add_role(:user) if roles.blank?
+  end
+
+  def check_if_email_can_be_blank
+    if email.blank?
+      if Rails.configuration.loadbalanced_configuration && greenlight_account?
+        errors.add(:email, I18n.t("errors.messages.blank"))
+      elsif provider == "greenlight"
+        errors.add(:email, I18n.t("errors.messages.blank"))
+      end
+    end
   end
 end
