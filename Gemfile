@@ -75,8 +75,11 @@ gem "rolify"
 gem 'cancancan', '~> 2.0'
 
 group :production do
-  # Use a postgres database in production.
+  # Use postgres as database in production.
   gem 'pg', '~> 0.18'
+
+  # As a fallback, might use sqlite
+  gem 'sqlite3', '~> 1.3.6'
 end
 
 # Ruby linting.
