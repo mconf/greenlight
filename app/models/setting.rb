@@ -37,6 +37,12 @@ class Setting < ApplicationRecord
         Rails.configuration.branding_image_default
       when "Primary Color"
         Rails.configuration.primary_color_default
+      when "Registration Method"
+        Rails.configuration.registration_method_default
+      when "Room Authentication"
+        false
+      when "Room Limit"
+        Rails.configuration.number_of_rooms_default
       end
     end
   end

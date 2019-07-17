@@ -17,10 +17,12 @@
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 require 'bbb_api'
+require 'i18n/language/mapping'
 
 module ApplicationHelper
   include MeetingsHelper
   include BbbApi
+  include I18n::Language::Mapping
 
   # Gets all configured omniauth providers.
   def configured_providers
@@ -31,12 +33,20 @@ module ApplicationHelper
 
   # Determines which providers can show a login button in the login modal.
   def iconset_providers
-    configured_providers & [:google, :twitter, :microsoft_office365]
+    providers = configured_providers & [:google, :twitter, :office365, :ldap]
+
+    providers.delete(:twitter) if session[:old_twitter_user_id]
+
+    providers
   end
 
   # Generates the login URL for a specific provider.
   def omniauth_login_url(provider)
-    "#{Rails.configuration.relative_url_root}/auth/#{provider}"
+    if provider == :ldap
+      ldap_signin_path
+    else
+      "#{Rails.configuration.relative_url_root}/auth/#{provider}"
+    end
   end
 
   # Determine if Greenlight is configured to allow user signups.
@@ -54,9 +64,8 @@ module ApplicationHelper
     locales = I18n.available_locales
     language_opts = [['<<<< ' + t("language_default") + ' >>>>', "default"]]
     locales.each do |locale|
-      language_name = t("language_name", locale: locale)
-      language_name = locale.to_s if locale != :en && language_name == 'English'
-      language_opts.push([language_name, locale.to_s])
+      language_mapping = I18n::Language::Mapping.language_mapping_list[locale.to_s.gsub("_", "-")]
+      language_opts.push([language_mapping["nativeName"], locale.to_s])
     end
     language_opts.sort
   end
@@ -77,9 +86,10 @@ module ApplicationHelper
 
   def allow_greenlight_accounts?
     return Rails.configuration.allow_user_signup unless Rails.configuration.loadbalanced_configuration
-    return false unless @user_domain && !@user_domain.empty? && Rails.configuration.allow_user_signup
-    # No need to retrieve the provider info if the provider is whitelisted
-    return true if launcher_allow_user_signup_whitelisted?(@user_domain)
+    return false unless @user_domain &&
+                          !@user_domain.empty? &&
+                          Rails.configuration.allow_user_signup
+    
     # Proceed with retrieving the provider info
     begin
       provider_info = retrieve_provider_info(@user_domain, 'api2', 'getUserGreenlightCredentials')
@@ -93,7 +103,8 @@ module ApplicationHelper
   # Return all the translations available in the client side through javascript
   def current_translations
     @translations ||= I18n.backend.send(:translations)
-    @translations[I18n.locale].with_indifferent_access[:javascript] || {}
+    translations_hash = @translations[I18n.locale]&.with_indifferent_access
+    (translations_hash[:javascript] if translations_hash) || {}
   end
 
   # Returns the page that the logo redirects to when clicked on

@@ -31,42 +31,22 @@ $(document).on('turbolinks:load', function(){
       $("#delete-confirm").parent().attr("action", url)
     })
 
-    // Change the color of the color inputs when the color is changed
-    $(".colorinput-input").change(function(data) {
-      // Get the color from the input
-      var color = $(data.target).val()
+    //clear the role filter if user clicks on the x
+    $(".clear-role").click(function() {
+      var search = new URL(location.href).searchParams.get('search')
 
-      // Update the color in the database and reload the page
-      $.post($("#coloring-path").val(), {color: color}).done(function(data) {
-        location.reload()
-      });
-    });
-
-    // Submit search if the user hits enter
-    $("#search-input").keypress(function(key) {
-      var keyPressed = key.which
-      if (keyPressed == 13) {
-        searchPage()
-      }
+      var url = window.location.pathname + "?page=1"
+    
+      if (search) {
+        url += "&search=" + search
+      }  
+    
+      window.location.replace(url);
     })
+    
+    /* COLOR SELECTORS */
 
-    // Add listeners for sort
-    $("th[data-order]").click(function(data){
-      var header_elem = $(data.target)
-
-      if(header_elem.data('order') === 'asc'){ // asc
-        header_elem.data('order', 'desc');
-      }
-      else if(header_elem.data('order') === 'desc'){ // desc
-        header_elem.data('order', 'none');
-      }
-      else{ // none
-        header_elem.data('order', 'asc');
-      }
-
-      var search = $("#search-input").val()
-      window.location.replace(window.location.pathname + "?page=1&search=" + search + "&column=" + header_elem.data("header") + "&direction="+ header_elem.data('order'))
-    })
+    loadColourSelectors()
   }
 
   // Only run on the admins edit user page.
@@ -76,8 +56,8 @@ $(document).on('turbolinks:load', function(){
       if (!url.endsWith("/")) {
         url += "/"
       }
-
       url += "admins?setting=" + data.target.id
+
       window.location.href = url
     })
   }
@@ -89,14 +69,95 @@ function changeBrandingImage(path) {
   $.post(path, {url: url})
 }
 
-// Searches the user table for the given string
-function searchPage() {
-  var search = $("#search-input").val()
+// Filters by role
+function filterRole(role) {
+  var search = new URL(location.href).searchParams.get('search')
 
-  window.location.replace(window.location.pathname + "?page=1&search=" + search)
+  var url = window.location.pathname + "?page=1" + "&role=" + role
+
+  if (search) {
+    url += "&search=" + search
+  }  
+
+  window.location.replace(url);
 }
 
-// Clears the search bar
-function clearSearch() {
-  window.location.replace(window.location.pathname + "?page=1")
+function loadColourSelectors() {
+  const pickrRegular = new Pickr({
+    el: '#colorinput-regular',
+    theme: 'monolith',
+    useAsButton: true,
+    lockOpacity: true,
+    defaultRepresentation: 'HEX',
+    closeWithKey: 'Enter',
+    default: $("#colorinput-regular").css("background-color"),
+
+    components: {
+        palette: true,
+        preview: true,
+        hue: true,
+        interaction: {
+            input: true,
+            save: true,
+        },
+    },
+  });
+
+  const pickrLighten = new Pickr({
+    el: '#colorinput-lighten',
+    theme: 'monolith',
+    useAsButton: true,
+    lockOpacity: true,
+    defaultRepresentation: 'HEX',
+    closeWithKey: 'Enter',
+    default: $("#colorinput-lighten").css("background-color"),
+
+    components: {
+        palette: true,
+        preview: true,
+        hue: true,
+        interaction: {
+            input: true,
+            save: true,
+        },
+    },
+  });
+
+  const pickrDarken = new Pickr({
+    el: '#colorinput-darken',
+    theme: 'monolith',
+    useAsButton: true,
+    lockOpacity: true,
+    defaultRepresentation: 'HEX',
+    closeWithKey: 'Enter',
+    default: $("#colorinput-darken").css("background-color"),
+
+    components: {
+        palette: true,
+        preview: true,
+        hue: true,
+        interaction: {
+            input: true,
+            save: true,
+        },
+    },
+  });
+
+  pickrRegular.on("save", (color, instance) => {
+    $.post($("#coloring-path-regular").val(), {color: color.toHEXA().toString()}).done(function() {
+      location.reload()
+    });
+  })
+
+  pickrLighten.on("save", (color, instance) => {
+    $.post($("#coloring-path-lighten").val(), {color: color.toHEXA().toString()}).done(function() {
+      location.reload()
+    });
+  })
+
+  pickrDarken.on("save", (color, instance) => {
+    $.post($("#coloring-path-darken").val(), {color: color.toHEXA().toString()}).done(function() {
+      location.reload()
+    });
+  })
 }

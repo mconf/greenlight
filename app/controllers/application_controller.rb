@@ -19,6 +19,7 @@
 require 'bigbluebutton_api'
 
 class ApplicationController < ActionController::Base
+  include ApplicationHelper
   include SessionsHelper
   include ThemingHelper
 
@@ -26,7 +27,10 @@ class ApplicationController < ActionController::Base
   before_action :set_locale
   before_action :check_admin_password
   before_action :set_user_domain
-  before_action :check_if_unbanned
+  before_action :check_user_role
+
+  # Manually handle BigBlueButton errors
+  rescue_from BigBlueButton::BigBlueButtonException, with: :handle_bigbluebutton_error
 
   # Force SSL for loadbalancer configurations.
   before_action :redirect_to_https
@@ -49,9 +53,12 @@ class ApplicationController < ActionController::Base
   def update_locale(user)
     locale = if user && user.language != 'default'
       user.language
+    elsif !I18n.default_locale.nil?
+      I18n.default_locale.to_s
     else
       http_accept_language.language_region_compatible_from(I18n.available_locales)
     end
+
     I18n.locale = locale.tr('-', '_') unless locale.nil?
   end
 
@@ -84,7 +91,7 @@ class ApplicationController < ActionController::Base
   helper_method :recording_thumbnails?
 
   def allow_greenlight_users?
-    Rails.configuration.greenlight_accounts
+    allow_greenlight_accounts?
   end
   helper_method :allow_greenlight_users?
 
@@ -127,20 +134,43 @@ class ApplicationController < ActionController::Base
   end
 
   def set_user_domain
-    @user_domain = if Rails.env.test? || !Rails.configuration.loadbalanced_configuration
-      "greenlight"
+    if Rails.env.test? || !Rails.configuration.loadbalanced_configuration
+      @user_domain = "greenlight"
     else
-      parse_user_domain(request.host)
+      @user_domain = parse_user_domain(request.host)
+
+      # Checks to see if the user exists
+      begin
+        retrieve_provider_info(@user_domain, 'api2', 'getUserGreenlightCredentials')
+      rescue => e
+        if e.message.eql? "No user with that id exists"
+          render "errors/not_found", locals: { message: I18n.t("errors.not_found.user_not_found.message"),
+            help: I18n.t("errors.not_found.user_not_found.help") }
+        elsif e.message.eql? "Provider not included."
+          render "errors/not_found", locals: { message: I18n.t("errors.not_found.user_missing.message"),
+            help: I18n.t("errors.not_found.user_missing.help") }
+        else
+          render "errors/internal_error"
+        end
+      end
     end
   end
   helper_method :set_user_domain
 
   # Checks if the user is banned and logs him out if he is
-  def check_if_unbanned
-    if current_user&.has_role?(:denied)
+  def check_user_role
+    if current_user&.has_role? :denied
       session.delete(:user_id)
-      redirect_to unauthorized_path
+      redirect_to root_path, flash: { alert: I18n.t("registration.banned.fail") }
+    elsif current_user&.has_role? :pending
+      session.delete(:user_id)
+      redirect_to root_path, flash: { alert: I18n.t("registration.approval.fail") }
     end
   end
-  helper_method :check_if_unbanned
+  helper_method :check_user_role
+
+  # Manually Handle BigBlueButton errors
+  def handle_bigbluebutton_error
+    render "errors/bigbluebutton_error"
+  end
 end

@@ -25,7 +25,7 @@ Rails.application.configure do
   # config.assets.css_compressor = :sass
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
-  config.assets.compile = false
+  config.assets.compile = true
 
   # `config.assets.precompile` and `config.assets.version` have moved to config/initializers/assets.rb
 
@@ -84,10 +84,6 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
-  # the I18n.default_locale when a translation cannot be found).
-  config.i18n.fallbacks = true
-
   # Send deprecation notices to registered listeners.
   config.active_support.deprecation = :notify
 
@@ -113,5 +109,10 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   # Set the relative url root for deployment to a subdirectory.
-  config.relative_url_root = ENV['RELATIVE_URL_ROOT'] || "/b" if ENV['RELATIVE_URL_ROOT'] != "/"
+  if ENV['RELATIVE_URL_ROOT'] != "/"
+    config.relative_url_root = ENV['RELATIVE_URL_ROOT'] || "/b"
+  end
+
+  # Default visibility for recordings
+  config.default_recording_visibility = ENV['DEFAULT_RECORDING_VISIBILITY'] || "unlisted"
 end

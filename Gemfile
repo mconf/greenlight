@@ -13,9 +13,6 @@ gem 'rails', '~> 5.0.7'
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 
-# Use SQLite as the primary database.
-gem 'sqlite3', '~> 1.3'
-
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 
@@ -29,7 +26,7 @@ gem 'coffee-rails', '~> 4.2'
 gem 'mini_racer', platforms: :ruby
 
 # Use jquery as the JavaScript library
-gem 'jquery-rails'
+gem 'jquery-rails', '~> 4.3.3'
 
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
 gem 'turbolinks', '~> 5'
@@ -47,9 +44,10 @@ gem 'bcrypt', '~> 3.1.7'
 gem 'omniauth'
 gem 'omniauth-twitter'
 gem 'omniauth-google-oauth2'
-gem 'omniauth-microsoft-office365', '~> 0.0.7'
-gem 'omniauth-ldap'
-gem 'omniauth-bn-launcher', '~> 0.1.0'
+gem 'omniauth-bn-office365', git: 'https://github.com/blindsidenetworks/omniauth-bn-office365.git', tag: '0.1.0'
+gem 'omniauth-bn-launcher', git: 'https://github.com/blindsidenetworks/omniauth-bn-launcher.git', tag: '0.1.1'
+gem 'bn-ldap-authentication', git: 'https://github.com/blindsidenetworks/bn-ldap-authentication.git'
+gem 'net-ldap'
 
 # BigBlueButton API wrapper.
 gem 'bigbluebutton-api-ruby'
@@ -77,8 +75,11 @@ gem "rolify"
 gem 'cancancan', '~> 2.0'
 
 group :production do
-  # Use a postgres database in production.
+  # Use postgres as database in production.
   gem 'pg', '~> 0.18'
+
+  # As a fallback, might use sqlite
+  gem 'sqlite3', '~> 1.3.6'
 end
 
 # Ruby linting.
@@ -89,6 +90,8 @@ group :development, :test do
   gem 'byebug', platform: :mri
   # Environment configuration.
   gem 'dotenv-rails'
+  # Use a sqlite database in test and development.
+  gem 'sqlite3', '~> 1.3.6'
 end
 
 group :test do
@@ -122,3 +125,5 @@ gem 'random_password'
 
 # Adds helpers for the Google reCAPTCHA API
 gem "recaptcha"
+
+gem 'i18n-language-mapping', '~> 0.1.0'

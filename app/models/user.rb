@@ -70,7 +70,7 @@ class User < ApplicationRecord
     # Provider attributes.
     def auth_name(auth)
       case auth['provider']
-      when :microsoft_office365
+      when :office365
         auth['info']['display_name']
       else
         auth['info']['name']
@@ -97,7 +97,7 @@ class User < ApplicationRecord
       when :twitter
         auth['info']['image'].gsub("http", "https").gsub("_normal", "")
       else
-        auth['info']['image'] unless auth['provider'] == :microsoft_office365
+        auth['info']['image']
       end
     end
   end
@@ -111,8 +111,8 @@ class User < ApplicationRecord
       "created_at"
     end
 
-    search_query = "name LIKE :search OR email LIKE :search OR username LIKE :search" \
-                   " OR #{created_at_query} LIKE :search OR provider LIKE :search"
+    search_query = "users.name LIKE :search OR email LIKE :search OR username LIKE :search" \
+                   " OR users.#{created_at_query} LIKE :search OR provider LIKE :search"
     search_param = "%#{string}%"
     where(search_query, search: search_param)
   end
@@ -121,7 +121,7 @@ class User < ApplicationRecord
     order("#{column} #{direction}")
   end
 
-  def all_recordings
+  def all_recordings(search_params = {}, ret_search_params = false)
     pag_num = Rails.configuration.pagination_number
 
     pag_loops = rooms.length / pag_num - 1
@@ -142,7 +142,7 @@ class User < ApplicationRecord
     full_res = bbb.get_recordings(meetingID: last_pag_room.pluck(:bbb_id))
     res[:recordings].push(*full_res[:recordings])
 
-    format_recordings(res)
+    format_recordings(res, search_params, ret_search_params)
   end
 
   # Activates an account and initialize a users main room
@@ -200,9 +200,8 @@ class User < ApplicationRecord
 
   def greenlight_account?
     return true unless provider # For testing cases when provider is set to null
-    return provider == "greenlight" unless Rails.configuration.loadbalanced_configuration
-    # No need to retrive the provider info if the provider is whitelisted
-    return true if launcher_allow_user_signup_whitelisted?(provider)
+    return true if provider == "greenlight"
+    return false unless Rails.configuration.loadbalanced_configuration
     # Proceed with fetching the provider info
     provider_info = retrieve_provider_info(provider, 'api2', 'getUserGreenlightCredentials')
     provider_info['provider'] == 'greenlight'

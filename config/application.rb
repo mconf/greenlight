@@ -34,12 +34,7 @@ module Greenlight
     config.exceptions_app = routes
 
     # Configure I18n localization.
-    config.i18n.available_locales = [:en]
-    config.i18n.default_locale = :en
-
-    config.i18n.available_locales.each do |locale|
-      config.i18n.fallbacks[locale] = [locale, :en]
-    end
+    config.i18n.enforce_available_locales = false
 
     # Check if a loadbalancer is configured.
     config.loadbalanced_configuration = ENV["LOADBALANCER_ENDPOINT"].present? && ENV["LOADBALANCER_SECRET"].present?
@@ -48,12 +43,21 @@ module Greenlight
     config.gl_callback_url = ENV["GL_CALLBACK_URL"]
 
     # Default credentials (test-install.blindsidenetworks.com/bigbluebutton).
-    config.bigbluebutton_endpoint_default = "http://test-install.blindsidenetworks.com/bigbluebutton/"
+    config.bigbluebutton_endpoint_default = "http://test-install.blindsidenetworks.com/bigbluebutton/api/"
     config.bigbluebutton_secret_default = "8cd8ef52e8e101574e400365b55e11a6"
 
     # Use standalone BigBlueButton server.
-    config.bigbluebutton_endpoint = ENV["BIGBLUEBUTTON_ENDPOINT"] || config.bigbluebutton_endpoint_default
-    config.bigbluebutton_secret = ENV["BIGBLUEBUTTON_SECRET"] || config.bigbluebutton_secret_default
+    config.bigbluebutton_endpoint = if ENV["BIGBLUEBUTTON_ENDPOINT"].present?
+       ENV["BIGBLUEBUTTON_ENDPOINT"]
+    else
+      config.bigbluebutton_endpoint_default
+    end
+
+    config.bigbluebutton_secret = if ENV["BIGBLUEBUTTON_SECRET"].present?
+      ENV["BIGBLUEBUTTON_SECRET"]
+    else
+      config.bigbluebutton_secret_default
+    end
 
     # Fix endpoint format if required.
     config.bigbluebutton_endpoint += "/" unless config.bigbluebutton_endpoint.ends_with?('/')
@@ -66,7 +70,6 @@ module Greenlight
       config.loadbalancer_endpoint = ENV["LOADBALANCER_ENDPOINT"]
       config.loadbalancer_secret = ENV["LOADBALANCER_SECRET"]
       config.launcher_secret = ENV["LAUNCHER_SECRET"]
-      config.launcher_allow_user_signup = ENV["LAUNCHER_ALLOW_GREENLIGHT_ACCOUNTS"]
 
       # Fix endpoint format if required.
       config.loadbalancer_endpoint += "/" unless config.bigbluebutton_endpoint.ends_with?("/")
@@ -82,6 +85,9 @@ module Greenlight
     # Determine if GreenLight should enable email verification
     config.enable_email_verification = (ENV['ALLOW_MAIL_NOTIFICATIONS'] == "true")
 
+    # Determine if the BBB server has authentication or not
+    config.enable_bbb_server_authentication = (ENV['ENABLE_BBB_SERVER_AUTHENTICATION'] == 'true')
+
     # Determine if GreenLight should allow non-omniauth signup/login.
     config.allow_user_signup = (ENV['ALLOW_GREENLIGHT_ACCOUNTS'] == "true")
 
@@ -94,25 +100,48 @@ module Greenlight
     # Configure which settings are available to user on room creation/edit after creation
     config.room_features = ENV['ROOM_FEATURES'] || ""
 
+    # Custom link for the 'Do you need help?' button on the User menu
+    config.need_help_button_link = ENV['NEED_HELP_BUTTON_LINK'] || 'http://docs.bigbluebutton.org/install/greenlight-v2.html'
+
+    # Default recording visibility
+    config.default_recording_visibility = ENV['DEFAULT_RECORDING_VISIBILITY'] || "unlisted"
+
     # The maximum number of rooms included in one bbbapi call
     config.pagination_number = ENV['PAGINATION_NUMBER'].to_i.zero? ? 25 : ENV['PAGINATION_NUMBER'].to_i
 
-    # Default branding image if the user does not specify one
-    config.branding_image_default = "https://raw.githubusercontent.com/bigbluebutton/greenlight/master/app/assets/images/logo_with_text.png"
-
-    # Default primary color if the user does not specify one
-    config.primary_color_default = "#467fcf"
-
-    # Default admin password
-    config.admin_password_default = ENV['ADMIN_PASSWORD'] || 'administrator'
-
     # Number of rows to display per page
-    config.pagination_rows = ENV['NUMBER_OF_ROWS'].to_i.zero? ? 10 : ENV['NUMBER_OF_ROWS'].to_i
+    config.pagination_rows = ENV['NUMBER_OF_ROWS'].to_i.zero? ? 25 : ENV['NUMBER_OF_ROWS'].to_i
 
     # Whether the user has defined the variables required for recaptcha
     config.recaptcha_enabled = ENV['RECAPTCHA_SITE_KEY'].present? && ENV['RECAPTCHA_SECRET_KEY'].present?
 
     # Show/hide "Add to Google Calendar" button in the room page
     config.enable_google_calendar_button = (ENV['ENABLE_GOOGLE_CALENDAR_BUTTON'] == "true")
+
+    # Enum containing the different possible registration methods
+    config.registration_methods = { open: "0", invite: "1", approval: "2" }
+
+    # DEFAULTS
+
+    # Default branding image if the user does not specify one
+    config.branding_image_default = ENV["BRANDING_IMAGE_DEFAULT"] || "https://raw.githubusercontent.com/bigbluebutton/greenlight/master/app/assets/images/logo_with_text.png"
+
+    # Default primary color if the user does not specify one
+    config.primary_color_default = ENV["PRIMARY_COLOR_DEFAULT"] || "#467fcf"
+
+    # Default primary color lighten if the user does not specify one
+    config.primary_color_lighten_default = ENV["PRIMARY_COLOR_LIGHTEN_DEFAULT"] || "#e8eff9"
+
+    # Default primary color darken if the user does not specify one
+    config.primary_color_darken_default = ENV["PRIMARY_COLOR_DARKEN_DEFAULT"] || "#316cbe"
+
+    # Default registration method if the user does not specify one
+    config.registration_method_default = config.registration_methods[:open]
+
+    # Default limit on number of rooms users can create
+    config.number_of_rooms_default = ENV["NUMBER_OF_ROOMS"] || 15
+
+    # Default admin password
+    config.admin_password_default = ENV['ADMIN_PASSWORD'] || 'administrator'
   end
 end

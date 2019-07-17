@@ -29,7 +29,7 @@
     </div>
   </td>
   <% if recording_thumbnails? %>
-    <td>
+    <th class="d-sm-none d-lg-table-cell">
       <% p = recording[:playbacks].find do |p| p.key?(:preview) end %>
       <% if p %>
         <% p[:preview][:images][:image].each do |img| %>
@@ -38,7 +38,7 @@
       <% end %>
     </td>
   <% end %>
-  <td id="recording-length" class="text-left" data-full-length="<%=recording[:playbacks].first[:length]%>">
+  <td id="recording-length" class="text-left" data-full-length="<%= recording_length(recording[:playbacks]) %>">
     <div class="small text-muted text-uppercase">
       <%= t("recording.table.length") %>
     </div>
@@ -63,7 +63,7 @@
     <% sorted_formats =  recording[:playbacks].sort_by! {|p| p[:type]} %>
     <% p = recording[:playbacks].find do |p| p.key?(:length) end %>
     <% sorted_formats.each do |p| %>
-      <%= link_to t("recording.format.#{p[:type]}"), p[:url], class: "btn btn-sm btn-primary", target: "_blank" %>
+      <%= link_to t("recording.format.#{p[:type]}"), play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]), class: "btn btn-sm btn-primary", target: "_blank" %>
     <% end %>
   </td>
 </tr>
