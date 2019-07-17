@@ -54,8 +54,9 @@ module APIConcern
     api_res[:recordings].select do |r|
              (!r[:metadata].nil? && ((!r[:metadata][:name].nil? &&
                     r[:metadata][:name].downcase.include?(search)) ||
-                  (r[:metadata][:"gl-listed"] == "true" && search == "public") ||
-                  (r[:metadata][:"gl-listed"] == "false" && search == "unlisted"))) ||
+                  (%w[true public].include? r[:metadata][:"gl-listed"] && search == "public") ||
+                  (%w[false unlisted].include? r[:metadata][:"gl-listed"] && search == "unlisted") ||
+                  (r[:metadata][:"gl-listed"] == "private" && search == "private"))) ||
                ((r[:metadata].nil? || r[:metadata][:name].nil?) &&
                  r[:name].downcase.include?(search)) ||
                r[:participants].include?(search) ||

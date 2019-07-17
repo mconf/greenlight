@@ -57,7 +57,7 @@ class Room < ApplicationRecord
       attendeePW: attendee_pw,
       moderatorOnlyMessage: options[:moderator_message],
       muteOnStart: options[:mute_on_start] || false,
-      "meta_#{META_LISTED}": Rails.configuration.default_recording_visibility == "unlisted",
+      "meta_#{META_LISTED}": Rails.configuration.default_recording_visibility,
     }
 
     # Send the create request.
@@ -130,7 +130,7 @@ class Room < ApplicationRecord
   # Fetches a rooms public recordings.
   def public_recordings(search_params = {}, ret_search_params = false)
     search, order_col, order_dir, recs = recordings(search_params, ret_search_params)
-    [search, order_col, order_dir, recs.select { |r| r[:metadata][:"gl-listed"] == "true" }]
+    [search, order_col, order_dir, recs.select { |r| %w[public true].include? r[:metadata][:"gl-listed"] }]
   end
 
   def update_recording(record_id, meta)
@@ -143,10 +143,12 @@ class Room < ApplicationRecord
     bbb.delete_recordings(record_id)
   end
 
-  # Chooses the recording of arrom, based on its id and type
+  # Chooses the recording url of a room, based on its id and type
+  # Returns the recording and the url, if it exists
   def play_recording(record_id, type)
     recording = recordings.select { |r| r[:recordID] == record_id }.first
-    recording[:playbacks].select { |p| p[:type] == type }.first[:url] if recording
+        
+    return recording, recording[:playbacks].select { |p| p[:type] == type }.first[:url] if recording
   end
 
   # Passing token on the url

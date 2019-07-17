@@ -52,10 +52,12 @@
   </td>
   <td class="text-left">
     <div class="dropdown">
-      <% if recording[:metadata][:"gl-listed"] == "true" %>
+      <% if %w[true public].include? recording[:metadata][:"gl-listed"] %>
         <i class="dropdown-icon fas fa-globe px-2"></i> <%= t("recording.visibility.public") %>
-      <% else %>
+      <% elsif %w[false unlisted].include? recording[:metadata][:"gl-listed"] %>
         <i class="dropdown-icon fas fa-link px-2"></i> <%= t("recording.visibility.unlisted") %>
+      <% else %>
+        <i class="dropdown-icon fas fa-lock px-2"></i> <%= t("recording.visibility.private") %>
       <% end %>
     </div>
   </td>

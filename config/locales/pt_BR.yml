@@ -325,6 +325,7 @@ pt_BR:
     visibility:
       public: Público
       unlisted: Não listado
+      private: Privado
     format:
       presentation: Apresentação
   registration:
