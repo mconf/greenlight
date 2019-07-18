@@ -66,7 +66,10 @@
   </td>
   <td>
     <% recording[:playbacks].sort_by { |p| p[:type] }.each do |p| %>
-      <%= link_to t("recording.format.#{p[:type]}"), play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]), class: "btn btn-sm btn-primary", target: "_blank" %>
+      <div class="mb-1">
+        <%= link_to t("recording.format.#{p[:type]}"), play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]), class: "btn btn-sm btn-primary", target: "_blank" %>
+        <a class="clipboard-link btn btn-sm btn-secondary" data-pres-link="<%= root_url + play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]) %>"><i class="far fa-clipboard"></i></a>
+      </div>
     <% end %>
   </td>
   <td class="text-center">
@@ -77,8 +80,7 @@
       <div class="dropdown-menu dropdown-menu-right">
         <% p = recording[:playbacks].find do |p| p.key?(:length) end %>
         <% if p %>
-          <a class="dropdown-item email-link" data-pres-link="<%= root_url + play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]) %>"><i class="dropdown-icon far fa-envelope"></i> <%= t("recording.email") %></a>
-          <a class="dropdown-item clipboard-link" data-pres-link="<%= root_url + play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]) %>"><i class="dropdown-icon far fa-clipboard"></i> <%= t("recording.clipboard") %></a>
+          <a class="dropdown-item email-link" data-pres-link="<%= root_url + play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]) %>"><i class="dropdown-icon far fa-envelope"></i> <%= t("recording.email") %></a>          
           <div class="dropdown-divider"></div>
         <% end %>
         <%= button_to delete_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID]), method: :delete, class: "dropdown-item" do %>
