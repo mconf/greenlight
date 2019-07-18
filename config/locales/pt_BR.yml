@@ -97,7 +97,9 @@ pt_BR:
         uid: ID de Usuário
         username: Identificação
       title: Administrar Usuários
-  add_to_google_calendar: "Adicionar ao Google Calendar"
+  google_calendar:
+    add: "Adicionar ao Google Calendar"
+    meeting_with: "Reunião em %{room_name}"
   bigbluebutton: BigBlueButton
   bigbluebutton_exception: "Oops, um erro ocorreu ao iniciar a sala."
   cancel: Cancelar
