@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
-# Brazilian (pt_BR) locale.
+# Locale.
 
 pt_BR:
   activerecord:
@@ -95,7 +95,7 @@ pt_BR:
         no_users: Nenhum usuário encontrado
         role: Função
         uid: ID de Usuário
-        username: Username
+        username: Identificação
       title: Administrar Usuários
   add_to_google_calendar: "Adicionar ao Google Calendar"
   bigbluebutton: BigBlueButton
@@ -115,11 +115,11 @@ pt_BR:
   enter_your_name: Insira seu nome
   errors:
     bigbluebutton:
-      help: "Por favor, tenha certeza que as etapas apropriadas foram finalizadas.. <a href=\"%{doc_link}\">Saiba mais</a>"
+      help: "Por favor, tenha certeza que as etapas apropriadas foram finalizadas. <a href=\"%{doc_link}\">Saiba mais</a>"
       message: BigBlueButton Endpoint ou Chave Secret inválida
       title: Erro no Servidor
     internal:
-      message: Parece que acontecei alguma coisa errada no nosso lado.
+      message: Parece que aconteceu alguma coisa errada no nosso lado.
       help: "O erro foi registrado, daremos uma olhada."
     migration_error:
       contact_admin: "Se você não é um administrador, por favor contate um administrador."
@@ -169,7 +169,7 @@ pt_BR:
     dropdown:
       account_settings: Organização
       help: "Precisa de ajuda?"
-      home: Home
+      home: Sala Inicial
       settings: Perfil
       signout: Sair
   home_room: Sala inicial
@@ -208,7 +208,7 @@ pt_BR:
           subject: Novo cadastro de conta do Greenlight
           username: "Esse usuário se cadastrou com o nome %{name} e o e-mail %{email}."
         subject: Conta Aprovada
-        username: "Seu username é %{email}."
+        username: "Sua identificação é %{email}."
       demoted:
         info: "Você não é mais um administrador em %{url}."
         more-info: Agora você possui os mesmos privilégios que um usuário normal e não poderá mais acessar as configurações de Administrador.
@@ -224,7 +224,7 @@ pt_BR:
           subject: Novo Cadastro de Usuário no Greenlight
           username: "Esse usuário se cadastrou com o nome %{name} e o e-mail %{email}."
         subject: Convite para se juntar ao BigBlueButton.
-        username: "Seu username é %{email}."
+        username: "Sua identificação é %{email}."
       password_reset:
         title: 'Reset de senha'
         welcome: "Parece que você esqueceu sua senha para%{bigbluebutton}"
@@ -240,7 +240,7 @@ pt_BR:
       verify_email:
         welcome: "Bem vindo ao seu espaço pessoal, %{name}!"
         success: "Aproveitando %{bigbluebutton}, você pode criar suas próprias salas para hospedar sessões de video-conferências e colaborar com outros."
-        username: "Seu username é %{email}."
+        username: "Sua identificação é %{email}."
         verify: "Para verificar sua conta, clique no link abaixo."
         verify_text: 'Para verificar sua conta, siga esse link: %{url}'
         verify_link: Verificar Conta
@@ -248,7 +248,7 @@ pt_BR:
   max_concurrent: O número máximo de sessões simultâneas foi alcançado.
   modal:
     create_room:
-      auto_join: "Automaticamente, me junte a sala."
+      auto_join: Me junte a sala automaticamente.
       create: Criar Sala
       free_delete: Você poderá apagar esta sala a qualquer momento.
       name_placeholder: Insira o nome da sala...
@@ -309,7 +309,6 @@ pt_BR:
       verification_failed: "Verificação do reCAPTCHA falhou, por favor, tente novamente."
   recording:
     all_recordings: Todas Gravações
-    clipboard: Copiar link da gravação para o clipboard
     email: Enviar link da gravação por e-mail
     no_recordings: "Esta sala não possui %{inject} gravações."
     no_user_recordings: Você não possui gravações.
@@ -349,8 +348,8 @@ pt_BR:
     update: Atualizar senha
   roles:
     administrator: Administrador
-    banned: Banid
-    pending: Pendent
+    banned: Banido
+    pending: Pendente
     super_admin: Super Administrador
     user: Usuário
   room:
@@ -373,7 +372,7 @@ pt_BR:
     update_settings_error: Ocorreu um erro ao atualizar as configurações da sala
     update_settings_success: Configurações da sala atualizadas com sucesso
     wait:
-      message: Esse encontro ainda não começou.
+      message: Essa reunião ainda não começou.
       auto: Você será automaticamente inserido na reunião quando ela começar.
   settings:
     account:

@@ -328,6 +328,7 @@ en:
     visibility:
       public: Public
       unlisted: Unlisted
+      private: Private
     format:
       presentation: Presentation
   registration:

@@ -31,7 +31,7 @@ class MainController < ApplicationController
     if current_user
       redirect_to room_path(current_user.main_room)
     elsif Rails.configuration.omniauth_ldap
-      redirect_to "#{relative_root}/auth/ldap"
+      redirect_to "#{relative_root}/ldap_signin"
     else
       # Warning: If you have overriden your root_path with a redirect to
       # this controller ('/home'), you will fall in an infinite
