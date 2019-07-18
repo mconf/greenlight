@@ -147,7 +147,7 @@ pt_BR:
         message: A URL inserida não é válida.
     title: Erros
     unauthorized:
-      message: Você não possui acesso a essa aplicação.
+      message: Você não possui permissão para visualizar essa página.
       help: "Se você acredita que isso é um erro, por favor, contate o seu administrador do sistema."
   expired_reset_token: O link para resetar a sua senha expirou.
   features:
@@ -165,7 +165,7 @@ pt_BR:
   go_back: Voltar
   greenlight: Greenlight
   header:
-    all_recordings: Todas Gravações.
+    all_recordings: Gravações
     dropdown:
       account_settings: Organização
       help: "Precisa de ajuda?"
@@ -248,7 +248,7 @@ pt_BR:
   max_concurrent: O número máximo de sessões simultâneas foi alcançado.
   modal:
     create_room:
-      auto_join: Me junte a sala automaticamente.
+      auto_join: Entrar na sala automaticamente.
       create: Criar Sala
       free_delete: Você poderá apagar esta sala a qualquer momento.
       name_placeholder: Insira o nome da sala...
@@ -308,7 +308,8 @@ pt_BR:
       recaptcha_unreachable: "Oops, não conseguimos validar seu reCAPTCHA. Por favor, tente novamente."
       verification_failed: "Verificação do reCAPTCHA falhou, por favor, tente novamente."
   recording:
-    all_recordings: Todas Gravações
+    all_recordings: Gravações
+    clipboard: Copiar link da gravação para o clipboard
     email: Enviar link da gravação por e-mail
     no_recordings: "Esta sala não possui %{inject} gravações."
     no_user_recordings: Você não possui gravações.
@@ -324,6 +325,7 @@ pt_BR:
     visibility:
       public: Público
       unlisted: Não listado
+      private: Privado
     format:
       presentation: Apresentação
   registration:
@@ -331,7 +333,7 @@ pt_BR:
       fail: "Sua conta ainda não foi aprovada. Se vários dias se passaram desde que você se cadastrou, por favor, contate o seu administrador."
       signup: Sua conta foi criada com sucesso. Ela foi enviada para um administrador para aprovação.
     banned:
-      fail: "Você não possui acesso a essa aplicação. Se você acredita que isso seja um engano, por favor, contate o seu administrador." 
+      fail: "Você não possui permissão para visualizar essa página. Se você acredita que isso seja um engano, por favor, contate o seu administrador." 
     deprecated:
       new_signin: Selecione um novo método de login para a sua conta. Todas as salas de sua antiga conta serão migradas para a nova conta.
       twitter_signin: "Entrar pelo Twitter foi descontinuado e será removido na próxima versão. Clique <a href=\"%{link}\"> aqui </a> para mover a sua conta para um novo método de autenticação."
