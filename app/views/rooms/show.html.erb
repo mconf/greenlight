@@ -47,7 +47,7 @@
             <div class="col-lg-7 col-md-12 pr-0">
               <div class="row mt-2 align-items-center">
                 <div class="col-md-6">
-                  <a href="#" id="copy" class="btn btn-primary btn-block">
+                  <a id="copy" class="btn btn-primary btn-block">
                     <i class="fas fa-copy"></i>
                     <%= t("copy") %>
                   </a>
@@ -56,7 +56,7 @@
                   <% if Rails.configuration.enable_google_calendar_button %>
                     <a href="<%= google_calendar_path %>" target="__blank" id="schedule" class="btn btn-primary btn-block">
                       <i class="fas fa-calendar-plus"></i>
-                      <%= t("add_to_google_calendar") %>
+                      <%= t("google_calendar.add") %>
                     </a>
                   <% end %>
                 </div>

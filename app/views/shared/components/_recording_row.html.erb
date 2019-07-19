@@ -17,11 +17,8 @@
   <td>
     <div id="recording-title" class="form-inline edit_hover_class" data-recordid="<%= recording[:recordID] %>" data-room-uid="<%= room_uid_from_bbb(recording[:meetingID]) %>" data-path="<%= update_room_path(room_uid: room_uid_from_bbb(recording[:meetingID])) %>">
       <text id='recording-text'>
-        <% if recording[:metadata][:name] %>
-          <%= recording[:metadata][:name] %>
-        <% else %>
-          <%= recording[:name] %>
-        <% end %>
+        <% record_name = recording[:metadata][:name] ? recording[:metadata][:name] : recording[:name]%>
+        <%= @room == current_user.main_room && record_name == @room.name ? t('home_room') : record_name %>
       </text>
       <a><i id="edit-record" class="fa fa-edit align-top ml-2" data-edit-recordid="<%= recording[:recordID] %>"></i></a>
     </div>
@@ -69,7 +66,10 @@
   </td>
   <td>
     <% recording[:playbacks].sort_by { |p| p[:type] }.each do |p| %>
-      <%= link_to t("recording.format.#{p[:type]}"), play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]), class: "btn btn-sm btn-primary", target: "_blank" %>
+      <div class="mb-1">
+        <%= link_to t("recording.format.#{p[:type]}"), play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]), class: "btn btn-sm btn-primary", target: "_blank" %>
+        <a class="clipboard-link btn btn-sm btn-secondary" data-pres-link="<%= root_url + play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]) %>"><i class="far fa-clipboard"></i></a>
+      </div>
     <% end %>
   </td>
   <td class="text-center">
@@ -78,12 +78,12 @@
         <i class="fas fa-ellipsis-v px-4"></i>
       </a>
       <div class="dropdown-menu dropdown-menu-right">
-        <% p = recording[:playbacks].find do |p| p.key?(:length) end %>
-        <% if p %>
-          <a class="dropdown-item email-link" data-pres-link="<%= root_url + play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]) %>"><i class="dropdown-icon far fa-envelope"></i> <%= t("recording.email") %></a>
-          <a class="dropdown-item clipboard-link" data-pres-link="<%= root_url + play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: p[:type]) %>"><i class="dropdown-icon far fa-clipboard"></i> <%= t("recording.clipboard") %></a>
+        <% links = recording[:playbacks].select { |p| p.key?(:length) } %>
+        <% if links.length > 0 %>
+          <a class="dropdown-item email-link" data-pres-link="<%= links.map { |link| root_url + play_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID], type: link[:type]) }.to_s %>"><i class="dropdown-icon far fa-envelope"></i> <%= t("recording.email") %></a>          
           <div class="dropdown-divider"></div>
         <% end %>
+
         <%= button_to delete_recording_path(meetingID: recording[:meetingID], record_id: recording[:recordID]), method: :delete, class: "dropdown-item" do %>
           <i class="dropdown-icon far fa-trash-alt"></i> <%= t("delete") %>
         <% end %>
