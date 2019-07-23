@@ -21,7 +21,7 @@ module RecordingsHelper
 
   # Helper for converting BigBlueButton dates into the desired format.
   def recording_date(date)
-    date.strftime("%B #{date.day.ordinalize}, %Y.")
+    I18n.localize(date, format: '%d/%m/%Y')
   end
 
   # Helper for converting BigBlueButton dates into a nice length string.
