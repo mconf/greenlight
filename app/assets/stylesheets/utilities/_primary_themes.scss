@@ -116,12 +116,6 @@ input:focus, select:focus {
   color: white !important;
 }
 
-#clear-search {
-  &:hover {
-    color: $primary-color-darken !important;
-  }
-}
-
 .pagination {
   .page-item {
     &.active a {

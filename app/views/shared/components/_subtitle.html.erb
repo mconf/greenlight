@@ -31,7 +31,7 @@
         <div class="input-group">
           <input id="search-input" type="text" class="form-control" placeholder="<%= t("settings.search") %>..." value="<%= @search %>">
           <% unless @search.blank? %>
-            <span id="clear-search" class="text-primary" onclick="clearSearch()">
+            <span id="clear-search" class="btn btn-outline-primary text-primary" onclick="clearSearch()">
               <i class="fas fa-times"></i>
             </span>
           <% end %>
