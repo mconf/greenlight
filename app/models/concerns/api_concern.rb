@@ -59,7 +59,7 @@ module APIConcern
                   (r[:metadata][:"gl-listed"] == "private" && search == "private"))) ||
                ((r[:metadata].nil? || r[:metadata][:name].nil?) &&
                  r[:name].downcase.include?(search)) ||
-               r[:participants].include?(search) ||
+               r[:participants]&.include?(search) ||
                !r[:playbacks].select { |p| p[:type].downcase.include?(search) }.empty?
     end
   end
