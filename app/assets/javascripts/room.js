@@ -32,10 +32,10 @@ $(document).on('turbolinks:load', function(){
       if (success) {
         inviteURL.blur();
         copy.addClass('btn-success');
-        copy.html("<i class='fas fa-check'></i> <%= I18n.t("copied") %>")
+        copy.html("<i class='fas fa-check'></i> " + t('buttons.copied'))
         setTimeout(function(){
           copy.removeClass('btn-success');
-          copy.html("<i class='fas fa-copy'></i> <%= I18n.t("copy") %>")
+          copy.html("<i class='fas fa-copy'></i> " + t('buttons.copy'))
         }, 2000)
       }
     });
