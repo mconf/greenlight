@@ -190,6 +190,9 @@ pt_BR:
   invalid_login_method: O login falhou porque sua conta foi criada utilizando login social. Selecione a opção de login social para continuar.
   invite_message: "Para convidar alguém para a reunião, envie este link:"
   javascript:
+    buttons:
+      copy: "Copiar"
+      copied: "Copiado"
     recording:
       format:
         presentation: "Apresentação"
