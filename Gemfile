@@ -84,6 +84,9 @@ group :production do
   # Use  for the cache store in production
   gem 'redis'
   gem 'hiredis'
+
+  # Use this gem to migrate your sqlite3 database to a PostgreSQL one
+  gem 'yaml_db'
 end
 
 # Ruby linting.
