@@ -80,6 +80,9 @@ group :production do
 
   # As a fallback, might use sqlite
   gem 'sqlite3', '~> 1.3.6'
+
+  # Use this gem to migrate your sqlite3 database to a PostgreSQL one
+  gem 'yaml_db'
 end
 
 # Ruby linting.
