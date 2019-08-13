@@ -19,8 +19,6 @@
     <title><%= t("bigbluebutton") %></title>
     <%= csrf_meta_tags %>
 
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
-
     <!-- Global javascript variables and helpers. -->
     <script type="text/javascript">
       window.GreenLight = {};
@@ -28,15 +26,15 @@
       window.GreenLight.RELATIVE_ROOT = "<%= relative_root %>"
     </script>
 
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
-
+    <!-- Application files -->
     <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
     <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
 
 
-    <!-- Because of turbolinks, this will only load once -->
-    <%= stylesheet_link_tag    "https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" %>
-    <%= javascript_include_tag "https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js" %>
+    <%# Commented it out, as it is currently not used in MConf Greenlight Fork %>
+    <%# <!-- Because of turbolinks, this will only load once --> %>
+    <%# stylesheet_link_tag    "https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" %>
+    <%# javascript_include_tag "https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js" %>
 
     <!-- Primary color styling -->
     <%= stylesheet_link_tag themes_primary_path %>
@@ -44,12 +42,10 @@
     <script type="text/javascript">
       // Rail-ish function to translate a string, according to the Rails locales
       window.t = function t(key) {
-        if (!key) {
-          return "";
-        }
+        if (!key) return "";
 
-        var keys = key.split('.');
-        var value = <%= current_translations.to_json.html_safe %>; // Add I18n variables
+        const keys = key.split('.');
+        let value = <%= current_translations.to_json.html_safe %>; // Add I18n variables
 
         keys.forEach(key => {
           if (value) {
