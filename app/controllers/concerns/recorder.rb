@@ -30,7 +30,7 @@ module Recorder
   # Fetches a rooms public recordings.
   def public_recordings(room_bbb_id, search_params = {}, ret_search_params = false)
     search, order_col, order_dir, recs = recordings(room_bbb_id, search_params, ret_search_params)
-    [search, order_col, order_dir, recs.select { |r| r[:metadata][:"gl-listed"] == "true" }]
+    [search, order_col, order_dir, recs.select { |r| %w[public true].include? r[:metadata][:"gl-listed"] }]
   end
 
   # Makes paginated API calls to get recordings
@@ -82,11 +82,12 @@ module Recorder
     api_res[:recordings].select do |r|
              (!r[:metadata].nil? && ((!r[:metadata][:name].nil? &&
                     r[:metadata][:name].downcase.include?(search)) ||
-                  (r[:metadata][:"gl-listed"] == "true" && search == "public") ||
-                  (r[:metadata][:"gl-listed"] == "false" && search == "unlisted"))) ||
+                  (%w[true public].include? r[:metadata][:"gl-listed"] && search == "public") ||
+                  (%w[false unlisted].include? r[:metadata][:"gl-listed"] && search == "unlisted") ||
+                  (r[:metadata][:"gl-listed"] == "private" && search == "private"))) ||
                ((r[:metadata].nil? || r[:metadata][:name].nil?) &&
                  r[:name].downcase.include?(search)) ||
-               r[:participants].include?(search) ||
+               r[:participants]&.include?(search) ||
                !r[:playbacks].select { |p| p[:type].downcase.include?(search) }.empty? ||
                (search_name && Room.find_by(bbb_id: r[:meetingID]).owner.email.downcase.include?(search))
     end

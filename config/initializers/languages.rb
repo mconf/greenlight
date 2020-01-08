@@ -11,9 +11,16 @@ end
 
 Rails.configuration.i18n.available_locales = configured_languages
 
-# Enable locale fallbacks for I18n (makes lookups for any locale fall back to
-# the I18n.default_locale when a translation cannot be found).
+# Configure default locale
+Rails.configuration.i18n.default_locale =
+  if Rails.configuration.i18n.available_locales.include?(ENV["DEFAULT_LOCALE"])
+    ENV["DEFAULT_LOCALE"].to_sym
+  else
+    :en
+  end
+
+# Configure fallbacks
 Rails.configuration.i18n.fallbacks = {}
 Rails.configuration.i18n.available_locales.each do |locale|
-  Rails.configuration.i18n.fallbacks[locale] = :en
+  Rails.configuration.i18n.fallbacks[locale] = [locale, :en]
 end

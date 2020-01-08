@@ -16,7 +16,11 @@
 <div class="sessions pb-5">
   <div class="container pt-6">
 
-    <%= render "shared/components/subtitle", subtitle: (only_public ? t("recording.visibility.public") + " " : "") + title, search: true %>
+    <% if only_public %>
+      <%= render "shared/components/subtitle", subtitle: t("recording.title.public"), search: true %>
+    <% else %>
+      <%= render "shared/components/subtitle", subtitle: t("recording.title.all"), search: true %>
+    <% end %>
     <div class="row">
       <div class="col-12">
         <div class="card">
@@ -77,7 +81,11 @@
               <tbody id="recording-table">
                 <tr id="no_recordings_found" style="display: none;">
                   <td colspan="7" class="text-center h4 p-6 font-weight-normal" >
-                    <%= t("recording.no_matched_recordings", inject: only_public ? t("recording.visibility.public").downcase + " "  : "") %>
+                    <% if only_public %>
+                      <%= t("recording.no_matched_recordings.public") %>
+                    <% else %>
+                      <%= t("recording.no_matched_recordings.all") %>
+                    <% end %>
                   </td>
                 </tr>
                 <% if recordings.empty? %>
@@ -86,7 +94,11 @@
                       <% if user_recordings %>
                         <%= t("recording.no_user_recordings") %>
                       <% else %>
-                        <%= t("recording.no_recordings", inject: only_public ? t("recording.visibility.public").downcase + " "  : "") %>
+                        <% if only_public %>
+                          <%= t("recording.no_recordings.public") %>
+                        <% else %>
+                          <%= t("recording.no_recordings.all") %>
+                        <% end %>
                       <% end %>
                     </td>
                   </tr>

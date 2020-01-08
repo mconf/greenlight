@@ -17,15 +17,32 @@
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>
 
 class RecordingsController < ApplicationController
+  layout false
+
   before_action :find_room
-  before_action :verify_room_ownership
+  before_action :verify_room_ownership, except: :play
 
   META_LISTED = "gl-listed"
+
+  # GET /:meetingID/:record_id/:format
+  def play
+    recording, url = play_recording(params[:record_id], params[:type])
+
+    # If it is private, and it is not the owner, can't access recording
+    redirect_to unauthorized_path if @room.owner != current_user &&
+                                     recording &&
+                                     recording[:metadata][:'gl-listed'] == 'private'
+
+    @token_url = token_url(current_user,
+      Rails.configuration.fake_user_address || request.env['HTTP_X_FORWARDED_FOR'] || request.remote_ip,
+      params[:record_id],
+      url)
+  end
 
   # POST /:meetingID/:record_id
   def update
     meta = {
-      "meta_#{META_LISTED}" => (params[:state] == "public"),
+      "meta_#{META_LISTED}" => params[:state],
     }
 
     res = update_recording(params[:record_id], meta)

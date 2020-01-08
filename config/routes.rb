@@ -17,6 +17,9 @@
 # with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 Rails.application.routes.draw do
+  # Home page (responsible for the redirections)
+  get 'home', to: 'main#home', as: :home
+
   get '/health_check', to: 'health_check#all'
 
   # Error routes.
@@ -122,6 +125,7 @@ Rails.application.routes.draw do
       post '/', to: 'recordings#update', as: :update_recording
       patch '/', to: 'recordings#rename', as: :rename_recording
       delete '/', to: 'recordings#delete', as: :delete_recording
+      get '/:type', to: 'recordings#play', as: :play_recording
     end
   end
 

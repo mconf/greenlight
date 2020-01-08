@@ -106,4 +106,38 @@ module BbbServer
     record_ids = bbb_server.get_recordings(meetingID: bbb_id)[:recordings].pluck(:recordID)
     bbb_server.delete_recordings(record_ids) unless record_ids.empty?
   end
+
+  # Chooses the recording url of a room, based on its id and type
+  # Returns the recording and the url, if it exists
+  def play_recording(record_id, type)
+    recording = bbb_server.get_recordings(recordID: record_id)[:recordings].select { |p| p.dig(:playback, :format, :type) == type }.first
+
+    return recording, recording.dig(:playback, :format, :url) if recording
+  end
+
+  # Passing token on the url
+  def token_url(user, ip, record_id, playback)
+    auth_token = get_token(user, ip, record_id)
+    uri = playback
+    if auth_token.present?
+      uri += URI.parse(uri).query.blank? ? "?" : "&"
+      uri += "token=#{auth_token}"
+    end
+
+    uri
+  end
+
+  # Get the token from the server
+  def get_token(user, ip, record_id)
+    if Rails.configuration.enable_recordings_authentication
+      auth_name = user.present? ? user.email : "anonymous"
+      api_token = bbb_server.send_api_request("getRecordingToken", authUser: auth_name, authAddr: ip, meetingID: record_id)
+      api_token[:token]
+    end
+  rescue BigBlueButton::BigBlueButtonException => e
+    logger.error "Error when trying to connect to the BBB server: #{e}"
+    logger.error "Possibly related to enabling BBB server authentication" if e.to_s.include?('getRecordingToken')
+
+    raise e
+  end
 end

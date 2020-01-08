@@ -96,6 +96,8 @@ class ApplicationController < ActionController::Base
   def user_locale(user = current_user)
     locale = if user && user.language != 'default'
       user.language
+    elsif ! I18n.default_locale.nil?
+      I18n.default_locale.to_s
     else
       http_accept_language.language_region_compatible_from(I18n.available_locales)
     end

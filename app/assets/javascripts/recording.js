@@ -37,5 +37,46 @@ $(document).on('turbolinks:load', function(){
         win.focus();
       });
     });
+
+    // Handle recording clipboard copy
+    function copyTextToClipboard(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      let successful = false;
+
+      try {
+        sucessfull = document.execCommand('copy');
+      } catch (err) {
+        sucessfull = false;
+      }
+
+      document.body.removeChild(textArea);
+
+      return sucessfull;
+    }
+
+    // Handle recording cliboard copy.
+    $('.clipboard-link').each(function() {
+      const clipboard_link = $(this);
+
+      clipboard_link.click(() => {
+        const clipboard_text = clipboard_link.attr("data-pres-link");
+        const success = copyTextToClipboard(clipboard_text);
+
+        if (success) {
+          clipboard_link.removeClass('btn-secondary')
+          clipboard_link.addClass('btn-success text-white');
+          clipboard_link.html("<i class='fas fa-check'></i>")
+
+          setTimeout(() => {
+            clipboard_link.addClass('btn-secondary');
+            clipboard_link.removeClass('btn-success text-white');
+            clipboard_link.html("<i class='fas fa-copy'></i>")
+          }, 2000)
+        }
+      });
+    });
   }
 });

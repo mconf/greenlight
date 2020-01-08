@@ -23,7 +23,14 @@
                                 <%= f.password_field :password, class: "form-control", placeholder: t("password"), value: "" %>
                             </div>
                         </div>
-                        <div>
+                        <% if Rails.configuration.ldap_reset_password_url %>
+                          <div class="form-group">
+                            <div class="input-icon">
+                              <%= link_to t("modal.login.forgot_password"), Rails.configuration.ldap_reset_password_url %>
+                            </div>
+                          </div>
+                        <% end %>
+                        <div class="card-footer px-0">
                             <%= f.submit t("login"), class: "btn btn-primary btn-block signin-button" %>
                         </div>
                     <% end %>
@@ -31,4 +38,4 @@
             </div>
         </div>
     </div>
-</div> 
+</div>

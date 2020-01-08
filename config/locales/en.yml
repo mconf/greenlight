@@ -222,6 +222,12 @@ en:
   invalid_login_method: Login failed due to account mismatch. You need to log in with omniauth.
   invite_message: "To invite someone to the meeting, send them this link:"
   javascript:
+    buttons:
+      copy: "Copy"
+      copied: "Copied"
+    recording:
+      format:
+        presentation: "Presentation"
     room:
       mailer:
         subject: 'has invited you to view a recording.'
@@ -366,9 +372,13 @@ en:
     all_recordings: All Recordings
     email: Email Recording
     error: There was an error retrieving %{count} recording(s)
-    no_recordings: This room has no %{inject}recordings.
+    no_recordings:
+      all: This room has no recordings.
+      public: This room has no public recordings.
     no_user_recordings: You currently have no recordings.
-    no_matched_recordings: No %{inject} recordings match your search.
+    no_matched_recordings:
+      all: No recordings match your search.
+      public: No public recordings match your search.
     recorded_on: Recorded on %{date}
     table:
       name: Name
@@ -380,12 +390,16 @@ en:
     visibility:
       public: Public
       unlisted: Unlisted
+      private: Private
     format:
       notes: Notes
       podcast: Podcast
       presentation: Presentation
       statistics: Statitics
       video: Video
+    title:
+      all: Recordings
+      public: Public recordings
   registration:
     approval:
       fail: Your account has not been approved yet. If multiples days have passed since you signed up, please contact your administrator.

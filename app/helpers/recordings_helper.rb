@@ -18,8 +18,8 @@
 
 module RecordingsHelper
   # Helper for converting BigBlueButton dates into the desired format.
-  def recording_date(date)
-    I18n.l date, format: "%B %d, %Y"
+  def recording_date(date, format = :long)
+    I18n.l date, format: format
   end
 
   # Helper for converting BigBlueButton dates into a nice length string.

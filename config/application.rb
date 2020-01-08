@@ -37,8 +37,7 @@ module Greenlight
     config.exceptions_app = routes
 
     # Configure I18n localization.
-    config.i18n.available_locales = [:en]
-    config.i18n.default_locale = :en
+    config.i18n.enforce_available_locales = false
 
     # Check if a loadbalancer is configured.
     config.loadbalanced_configuration = ENV["LOADBALANCER_ENDPOINT"].present? && ENV["LOADBALANCER_SECRET"].present?
@@ -89,6 +88,13 @@ module Greenlight
     # Determine if GreenLight should enable email verification
     config.enable_email_verification = (ENV['ALLOW_MAIL_NOTIFICATIONS'] == "true")
 
+    config.ldap_reset_password_url = ENV['LDAP_RESET_PASSWORD_URL']
+
+    # Determine if the recordings access is authenticated only
+    config.enable_recordings_authentication = (ENV['ENABLE_RECORDINGS_AUTHENTICATION'] == 'true')
+
+    config.fake_user_address = ENV['FAKE_USER_ADDRESS']
+
     # Determine if GreenLight should allow non-omniauth signup/login.
     config.allow_user_signup = (ENV['ALLOW_GREENLIGHT_ACCOUNTS'] == "true")
 
@@ -100,6 +106,12 @@ module Greenlight
 
     # Configure which settings are available to user on room creation/edit after creation
     config.room_features = ENV['ROOM_FEATURES'] || ""
+
+    # Custom link for the 'Do you need help?' button on the User menu
+    config.need_help_button_link = ENV['NEED_HELP_BUTTON_LINK'] || 'http://docs.bigbluebutton.org/install/greenlight-v2.html'
+
+    # Default recording visibility
+    config.default_recording_visibility = ENV['DEFAULT_RECORDING_VISIBILITY'] || "unlisted"
 
     # The maximum number of rooms included in one bbbapi call
     config.pagination_number = ENV['PAGINATION_NUMBER'].to_i.zero? ? 25 : ENV['PAGINATION_NUMBER'].to_i
@@ -130,16 +142,16 @@ module Greenlight
     # DEFAULTS
 
     # Default branding image if the user does not specify one
-    config.branding_image_default = "https://raw.githubusercontent.com/bigbluebutton/greenlight/master/app/assets/images/logo_with_text.png"
+    config.branding_image_default = ENV["BRANDING_IMAGE_DEFAULT"] || "https://raw.githubusercontent.com/bigbluebutton/greenlight/master/app/assets/images/logo_with_text.png"
 
     # Default primary color if the user does not specify one
-    config.primary_color_default = "#467fcf"
+    config.primary_color_default = ENV["PRIMARY_COLOR_DEFAULT"] || "#467fcf"
 
     # Default primary color lighten if the user does not specify one
-    config.primary_color_lighten_default = "#e8eff9"
+    config.primary_color_lighten_default = ENV["PRIMARY_COLOR_LIGHTEN_DEFAULT"] || "#e8eff9"
 
     # Default primary color darken if the user does not specify one
-    config.primary_color_darken_default = "#316cbe"
+    config.primary_color_darken_default = ENV["PRIMARY_COLOR_DARKEN_DEFAULT"] || "#316cbe"
 
     # Default registration method if the user does not specify one
     config.registration_method_default = if ENV["DEFAULT_REGISTRATION"] == "invite"
@@ -151,7 +163,7 @@ module Greenlight
     end
 
     # Default limit on number of rooms users can create
-    config.number_of_rooms_default = 15
+    config.number_of_rooms_default = ENV["NUMBER_OF_ROOMS"] || 15
 
     # Default admin password
     config.admin_password_default = ENV['ADMIN_PASSWORD'] || 'administrator'
