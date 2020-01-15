@@ -110,9 +110,18 @@ module BbbServer
   # Chooses the recording url of a room, based on its id and type
   # Returns the recording and the url, if it exists
   def play_recording(record_id, type)
+    convert_to_transcription = if type == "transcription"
+      type = "presentation"
+      true
+    else
+      false
+    end
     recording = bbb_server.get_recordings(recordID: record_id)[:recordings].select { |p| p.dig(:playback, :format, :type) == type }.first
-
-    return recording, recording.dig(:playback, :format, :url) if recording
+    if convert_to_transcription
+      return recording, get_transcription_url(recording.dig(:playback, :format, :url), record_id) if recording
+    else
+      return recording, recording.dig(:playback, :format, :url) if recording
+    end
   end
 
   # Passing token on the url
@@ -131,11 +140,16 @@ module BbbServer
   def get_token(user, ip, record_id)
     if Rails.configuration.enable_recordings_authentication
       auth_name = user.present? ? user.email : "anonymous"
-      api_token = bbb_server.send_api_request("getRecordingToken", authUser: auth_name, authAddr: ip, meetingID: record_id)
+      api_token = bbb_server.send_api_request("getRecordingToken", authUser: auth_name, authAddr: ip, meetingID: record_id, action: "edit")
       api_token[:token]
     end
   rescue BigBlueButton::BigBlueButtonException => e
     puts "BigBlueButton failed on getRecordingToken: #{e.key}: #{e.message}"
     raise e
+  end
+
+  def get_transcription_url(url, record_id)
+    uri = URI.parse(url)
+    "#{uri.scheme}://#{uri.host}/editor/captions/#{record_id}/edit"
   end
 end

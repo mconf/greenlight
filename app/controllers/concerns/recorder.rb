@@ -71,6 +71,19 @@ module Recorder
     recs = filter_recordings(api_res, search, search_name)
     recs = sort_recordings(recs, order_col, order_dir)
 
+    if Rails.configuration.enable_transcription_format
+      # Add transcription format
+      recs.each do |recording|
+        presentation_playback = recording[:playbacks].select { |p| p[:type] == "presentation" }.first
+        if ! presentation_playback.nil?
+          transcription = presentation_playback.clone
+          transcription[:type] = "transcription"
+          transcription[:url] = get_transcription_url(transcription[:url], recording[:recordID])
+          recording[:playbacks] << transcription
+        end
+      end
+    end
+
     if ret_search_params
       [search, order_col, order_dir, recs]
     else

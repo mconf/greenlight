@@ -93,6 +93,8 @@ module Greenlight
     # Determine if the recordings access is authenticated only
     config.enable_recordings_authentication = (ENV['ENABLE_RECORDINGS_AUTHENTICATION'] == 'true')
 
+    config.enable_transcription_format = (ENV['ENABLE_TRANSCRIPTION_FORMAT'] == 'true')
+
     config.fake_user_address = ENV['FAKE_USER_ADDRESS']
 
     # Determine if GreenLight should allow non-omniauth signup/login.
