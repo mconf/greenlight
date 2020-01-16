@@ -162,7 +162,7 @@ pt_BR:
   enter_your_name: Insira seu nome
   errors:
     bigbluebutton:
-      help: "Por favor, tenha certeza que as etapas apropriadas foram finalizadas. <a href=\"%{doc_link}\">Saiba mais</a>"
+      help: ""
       message: Scriba Endpoint ou Chave Secret inválida
       title: Erro no Servidor
     internal:
