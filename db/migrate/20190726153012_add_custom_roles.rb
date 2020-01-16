@@ -43,6 +43,15 @@ class AddCustomRoles < ActiveRecord::Migration[5.2]
       t.timestamps
     end
 
+    create_table :role_permissions do |t|
+      t.string :name
+      t.string :value, default: ""
+      t.boolean :enabled, default: false
+      t.references :role, foreign_key: true
+
+      t.timestamps
+    end
+
     add_index(:roles, :name)
     add_index(:roles, [:name, :provider], unique: true)
 

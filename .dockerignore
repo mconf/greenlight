@@ -1,16 +1,17 @@
 # git
 .git
 .gitignore
+docker-compose.yml
 README.md
 
 # Rails
-.env
+/.*
 *.rbc
 capybara-*.html
 .rspec
 log
 tmp
-db/
+db/production
 public/assets
 public/b
 coverage/

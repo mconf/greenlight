@@ -2,15 +2,6 @@
 
 class CreateRolePermissions < ActiveRecord::Migration[5.2]
   def change
-    create_table :role_permissions do |t|
-      t.string :name
-      t.string :value, default: ""
-      t.boolean :enabled, default: false
-      t.references :role, foreign_key: true
-
-      t.timestamps
-    end
-
     Role.all.each do |role|
       role.role_permissions.create(name: "can_create_rooms", value: role.can_create_rooms.to_s, enabled: true)
       role.role_permissions.create(name: "send_promoted_email", value: role.send_promoted_email.to_s, enabled: true)

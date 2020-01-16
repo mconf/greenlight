@@ -16,9 +16,9 @@ module BbbApi
     if Rails.configuration.loadbalanced_configuration
       user_domain = retrieve_provider_info(user_provider)
 
-      BigBlueButton::BigBlueButtonApi.new(remove_slash(user_domain["apiURL"]), user_domain["secret"], "0.8")
+      BigBlueButton::BigBlueButtonApi.new(remove_slash(user_domain["apiURL"]), user_domain["secret"], "0.8", Rails.configuration.log_level == :debug)
     else
-      BigBlueButton::BigBlueButtonApi.new(remove_slash(bbb_endpoint), bbb_secret, "0.8")
+      BigBlueButton::BigBlueButtonApi.new(remove_slash(bbb_endpoint), bbb_secret, "0.8", Rails.configuration.log_level == :debug)
     end
   end
 

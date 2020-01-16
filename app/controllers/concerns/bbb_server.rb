@@ -135,9 +135,7 @@ module BbbServer
       api_token[:token]
     end
   rescue BigBlueButton::BigBlueButtonException => e
-    logger.error "Error when trying to connect to the BBB server: #{e}"
-    logger.error "Possibly related to enabling BBB server authentication" if e.to_s.include?('getRecordingToken')
-
+    puts "BigBlueButton failed on getRecordingToken: #{e.key}: #{e.message}"
     raise e
   end
 end
