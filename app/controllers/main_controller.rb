@@ -23,14 +23,4 @@ class MainController < ApplicationController
     # Store invite token
     session[:invite_token] = params[:invite_token] if params[:invite_token] && invite_registration
   end
-
-  # GET /home
-  def home
-    # Check if user is authenticated
-    if current_user
-      redirect_to current_user.main_room
-    else
-      redirect_to signin_path
-    end
-  end
 end

@@ -26,7 +26,7 @@
                         <% if Rails.configuration.ldap_reset_password_url %>
                           <div class="form-group">
                             <div class="input-icon">
-                              <%= link_to t("modal.login.forgot_password"), Rails.configuration.ldap_reset_password_url %>
+                              <%= link_to t("modal.login.forgot_password"), Rails.configuration.ldap_reset_password_url, target: "_blank" %>
                             </div>
                           </div>
                         <% end %>
