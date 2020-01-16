@@ -139,7 +139,7 @@ module BbbServer
   # Get the token from the server
   def get_token(user, ip, record_id)
     if Rails.configuration.enable_recordings_authentication
-      auth_name = user.present? ? user.email : "anonymous"
+      auth_name = user.present? ? user.username : "anonymous"
       api_token = bbb_server.send_api_request("getRecordingToken", authUser: auth_name, authAddr: ip, meetingID: record_id, action: "edit")
       api_token[:token]
     end
