@@ -31,7 +31,8 @@ class RecordingsController < ApplicationController
     # If it is private, and it is not the owner, can't access recording
     redirect_to unauthorized_path if @room.owner != current_user &&
                                      recording &&
-                                     recording[:metadata][:'gl-listed'] == 'private'
+                                     recording[:metadata][:'gl-listed'] == 'private' &&
+                                     ! current_user&.has_role?(:admin)
 
     @token_url = token_url(current_user,
       Rails.configuration.fake_user_address || request.env['HTTP_X_FORWARDED_FOR'] || request.remote_ip,

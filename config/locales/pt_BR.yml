@@ -166,8 +166,8 @@ pt_BR:
       message: BigBlueButton Endpoint ou Chave Secret inválida
       title: Erro no Servidor
     internal:
-      message: Parece que aconteceu alguma coisa errada no nosso lado.
-      help: "O erro foi registrado, daremos uma olhada."
+      message: Ocorreu uma falha no sistema ao processar sua requisição
+      help: O erro foi registrado e será verificado pela equipe técnica
       report: Relatar problema
     maintenance:
       message: "Desculpe, estamos em manutenção"
