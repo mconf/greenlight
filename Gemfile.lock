@@ -342,6 +342,9 @@ GEM
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.4)
     xml-simple (1.1.5)
+    yaml_db (0.7.0)
+      rails (>= 3.0)
+      rake (>= 0.8.7)
 
 PLATFORMS
   ruby
@@ -399,3 +402,4 @@ DEPENDENCIES
   uglifier (>= 1.3.0)
   web-console (>= 3.3.0)
   webmock
+  yaml_db
